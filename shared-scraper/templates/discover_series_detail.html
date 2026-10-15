@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}Series {{ series }} — Auto Discover{% endblock %}
+{% block content %}
+
+<a class="back-link" href="{{ url_for('discover_index') }}">{{ icons.back(14) }} Back to Auto Discover</a>
+
+<h1>{{ icons.hash(20) }} Series {{ series }}</h1>
+<p class="subtitle">
+  Application numbers {{ "{:,}".format(progress.range_start) }} – {{ "{:,}".format(progress.range_end) }}
+  (100,000 total).
+</p>
+
+<div class="card">
+  <h2>Progress</h2>
+  <div class="detail-grid">
+    <div class="detail-field">
+      <div class="label">Status</div>
+      <div class="value">
+        {% if progress.status == 'done' %}{{ icons.check_circle(14) }} Done
+        {% elif progress.status == 'in_progress' %}{{ icons.bolt(14) }} In progress{% if progress.claimed_by_job_id %} (running now){% endif %}
+        {% else %}Queued{% endif %}
+      </div>
+    </div>
+    <div class="detail-field">
+      <div class="label">Have</div>
+      <div class="value">{{ total_hits }} trademark(s) found</div>
+    </div>
+    <div class="detail-field">
+      <div class="label">Missing</div>
+      <div class="value">{{ "{:,}".format(missing_count) }} not yet checked</div>
+    </div>
+    <div class="detail-field">
+      <div class="label">Misses</div>
+      <div class="value">{{ progress.misses_count }}</div>
+    </div>
+    <div class="detail-field">
+      <div class="label">Errors</div>
+      <div class="value">{{ progress.errors_count }}</div>
+    </div>
+    <div class="detail-field">
+      <div class="label">Last email used</div>
+      <div class="value">{{ progress.email_used or "—" }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Missing (not yet checked)</h2>
+  {% if missing_count > 0 %}
+  <p style="color:var(--muted);font-size:0.9rem;margin-top:0">
+    <strong>{{ "{:,}".format(missing_count) }}</strong> number(s) still untried, from
+    <strong>{{ "{:,}".format(missing_start) }}</strong> to
+    <strong>{{ "{:,}".format(progress.range_end) }}</strong>.
+    A "Scan this series" run picks up exactly here.
+  </p>
+  {% else %}
+  <p style="color:var(--muted);font-size:0.9rem;margin-top:0">
+    {{ icons.check_circle(14) }} Every number in this series has been checked.
+  </p>
+  {% endif %}
+
+  <form method="post" action="{{ url_for('discover_start') }}" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:12px">
+    <input type="hidden" name="mode" value="series">
+    <input type="hidden" name="target_series" value="{{ series }}">
+    <input type="hidden" name="delay_min" value="2">
+    <input type="hidden" name="delay_max" value="5">
+    <div class="field-g">
+      <label class="field-label" for="ds-email">Your Email Address <span class="req">*</span></label>
+      <input type="email" id="ds-email" name="email" required
+             value="{{ progress.email_used or '' }}" placeholder="you@gmail.com" autocomplete="username">
+    </div>
+    <button type="submit"{% if progress.claimed_by_job_id %} disabled{% endif %}>
+      {{ icons.play(14) }} Scan this series
+    </button>
+    {% if progress.claimed_by_job_id %}
+    <span class="hint">Already running — check Auto Discover for live progress.</span>
+    {% endif %}
+  </form>
+</div>
+
+<div class="card">
+  <h2>Hits found in this series ({{ total_hits }} unique application number(s))</h2>
+  {% if hits %}
+  <div class="search-grid">
+    {% for h in hits %}
+    <a class="search-card" href="{{ url_for('ipindia_result', search_id=h.id, back=request.full_path) }}">
+      {% if h.logo_filename %}
+      <img src="{{ url_for('ipindia_logo', query=h.query, filename=h.logo_filename) }}"
+           alt="" class="card-logo">
+      {% endif %}
+      <div class="name">{{ h.trade_mark or h.query }}</div>
+      <div class="meta">{{ icons.hash(13) }} App No. {{ h.query }}</div>
+      {% if h.status %}<div class="meta">{{ icons.tag(13) }} {{ h.status }}</div>{% endif %}
+      <div class="meta">{{ h.scraped_at.strftime('%Y-%m-%d') }} (latest)</div>
+      {% if h.fetch_count > 1 %}
+      <div class="meta">
+        <span onclick="event.preventDefault(); window.location='{{ url_for('discover_appno_fetches', series=series, app_no=h.query) }}';"
+              style="color:var(--accent);text-decoration:underline">
+          {{ icons.history(12) }} fetched {{ h.fetch_count }} times — view all
+        </span>
+      </div>
+      {% endif %}
+    </a>
+    {% endfor %}
+  </div>
+
+  {% if total_pages > 1 %}
+  <div style="display:flex;gap:10px;align-items:center;justify-content:center;margin-top:20px">
+    {% if page > 1 %}
+    <a class="btn-secondary" href="{{ url_for('discover_series_detail', series=series, page=page-1) }}">Previous</a>
+    {% endif %}
+    <span style="color:var(--muted);font-size:0.88rem">Page {{ page }} of {{ total_pages }}</span>
+    {% if page < total_pages %}
+    <a class="btn-secondary" href="{{ url_for('discover_series_detail', series=series, page=page+1) }}">Next</a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="empty">No hits found in this series yet.</div>
+  {% endif %}
+</div>
+
+{% endblock %}

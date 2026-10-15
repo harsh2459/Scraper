@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Status Changes — {% endblock %}
+
+{% block extra_css %}
+  .page-head{margin-bottom:16px;}
+  .page-head h1{font-size:17px;font-weight:700;margin-bottom:2px;}
+  .page-head p{font-size:12.5px;color:var(--muted-fg);}
+  .transition-cell{color:var(--muted-fg);font-size:12px;}
+  .transition-cell b{color:var(--s-teal);font-weight:500;}
+  .empty-state{padding:50px 0;text-align:center;color:var(--muted-fg);font-size:13.5px;}
+{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Status Changes</h1>
+  <p>Trademarks whose IP India portal status has changed between fetches.</p>
+</div>
+
+{% if changes %}
+<div class="table-panel">
+  <table>
+    <thead>
+      <tr>
+        <th>App. Num</th>
+        <th>Word Mark</th>
+        <th>Transition</th>
+        <th>Changed</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in changes %}
+      <tr class="row-link" onclick="window.location='{{ url_for('trademark_detail', id_=c.id) }}'">
+        <td><span class="app-no-link">{{ c.app_no }}</span></td>
+        <td>{{ c.word_mark }}</td>
+        <td class="transition-cell">{{ c.old_status }} → <b>{{ c.new_status }}</b></td>
+        <td class="date-cell">{{ c.changed_at.strftime('%d/%m/%Y') }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <p>No status changes recorded yet — these appear once a trademark has been fetched at least twice with a different status.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}Agents — Search History{% endblock %}
+{% block content %}
+
+<a class="back-link" href="{{ url_for('ipindia_history_dates') }}">{{ icons.back(14) }} Back to search history</a>
+
+<h1>{{ icons.user(20) }} Agents</h1>
+<p class="subtitle">Pick an agent/advocate to see every application they've filed.</p>
+
+{% if agents %}
+  <div class="count">{{ agents|length }} agent(s)</div>
+  <div class="search-grid">
+    {% for a in agents %}
+    <a class="search-card" href="{{ url_for('ipindia_history_agent_detail', agent_name=a.agent_name) }}">
+      <div class="name" style="display:flex;align-items:center;gap:8px">{{ icons.user(15) }} {{ a.agent_name }}</div>
+      <div class="meta">{{ a.result_count }} application(s)</div>
+    </a>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty">No agent data extracted yet.</div>
+{% endif %}
+
+{% endblock %}

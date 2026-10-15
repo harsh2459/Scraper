@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}Cluster Expand — IP India{% endblock %}
+{% block content %}
+
+<h1>{{ icons.tag(20) }} Cluster Expand</h1>
+<p class="subtitle">
+  Start from any trade mark name: searches QuickCompany for it, looks up every
+  Application ID it finds on IP India (one login for the whole run), then
+  keeps expanding outward using each new hit's own trade mark name — growing
+  the dataset until you stop it.
+</p>
+
+{% if active_job_ids %}
+<div class="count">{{ active_job_ids|length }} run(s) in progress</div>
+{% for job_id in active_job_ids %}
+<div class="card">
+  <h2>Run in progress</h2>
+  <div id="cluster-panel-{{ job_id }}"></div>
+</div>
+{% endfor %}
+{% endif %}
+
+<div class="card">
+  <h2>Start a new Cluster Expand run</h2>
+  <div id="cluster-panel">
+    <form method="post" action="{{ url_for('cluster_start') }}" class="cluster-start-form auth-mode-form" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+      <input type="hidden" name="auth_mode" class="auth-mode-input" value="{{ 'pool' if pool_free_count else 'manual' }}">
+      <div class="field-g">
+        <label class="field-label">Login</label>
+        <div class="auth-mode-toggle">
+          <button type="button" class="auth-tab {{ 'active' if pool_free_count }}" onclick="setAuthMode(this, 'pool')">
+            {{ icons.bolt(12) }} Auto (pool) — {{ pool_free_count }} free
+          </button>
+          <button type="button" class="auth-tab {{ 'active' if not pool_free_count }}" onclick="setAuthMode(this, 'manual')">Manual entry</button>
+        </div>
+      </div>
+      <div class="field-g auth-manual-email" style="display:{{ 'none' if pool_free_count else 'flex' }}">
+        <label class="field-label" for="cx-email">Your Email Address <span class="req">*</span></label>
+        <input type="email" id="cx-email" name="email" {{ 'required' if not pool_free_count }} placeholder="you@gmail.com" autocomplete="username">
+        <small class="hint">IP India sends OTP to this address for login.</small>
+      </div>
+      <div class="field-g">
+        <label class="field-label" for="cx-mark-name">Seed trade mark name <span class="req">*</span></label>
+        <input type="text" id="cx-mark-name" name="mark_name" required placeholder="e.g. KARMESTIA FARMS">
+      </div>
+      <div class="field-g">
+        <label class="field-label" for="cx-delay-min">Min delay (s)</label>
+        <input type="number" id="cx-delay-min" name="delay_min" min="0.5" max="60" step="0.5" value="2" style="max-width:100px">
+      </div>
+      <div class="field-g">
+        <label class="field-label" for="cx-delay-max">Max delay (s)</label>
+        <input type="number" id="cx-delay-max" name="delay_max" min="0.5" max="60" step="0.5" value="5" style="max-width:100px">
+      </div>
+      <button type="submit">{{ icons.play(14) }} Send OTP &amp; Continue</button>
+    </form>
+  </div>
+</div>
+
+<style>
+  .ip-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 560px) { .ip-row { grid-template-columns: 1fr; } }
+  .field-g { display: flex; flex-direction: column; gap: 5px; }
+  .field-label { font-size: 0.85rem; font-weight: 600; color: var(--muted); }
+  .field-g input {
+    padding: 10px 12px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 0.95rem;
+    background: var(--bg); color: var(--text);
+  }
+  .field-g input:focus { outline: none; border-color: var(--accent); }
+  .req { color: var(--error-text); }
+  .hint { color: var(--muted); font-size: 0.78rem; }
+  .btn-secondary {
+    padding: 10px 16px; border: 1px solid var(--border);
+    border-radius: 8px; background: transparent;
+    color: var(--text); cursor: pointer; font-size: 0.9rem;
+    text-decoration: none; display: inline-block;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .spinner {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2.5px solid var(--border); border-top-color: var(--accent);
+    animation: spin 0.8s linear infinite; flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<script>
+(function(){
+  function wirePanel(panel){
+    function bindStartForm(){
+      var form = panel.querySelector("form.cluster-start-form");
+      if (!form) return;
+      form.addEventListener("submit", function(e){
+        e.preventDefault();
+        fetch(form.action, { method: "POST", body: new FormData(form) })
+          .then(function(r){ return r.text(); })
+          .then(function(html){ panel.innerHTML = html; bindAll(); })
+          .catch(function(){ panel.innerHTML = '<div class="banner error">Request failed. Try again.</div>'; });
+      });
+    }
+
+    function bindOtpForm(){
+      var form = panel.querySelector("form.cluster-otp-form");
+      if (!form) return;
+      form.addEventListener("submit", function(e){
+        e.preventDefault();
+        fetch(form.action, { method: "POST", body: new FormData(form) })
+          .then(function(r){ return r.text(); })
+          .then(function(html){ panel.innerHTML = html; bindAll(); })
+          .catch(function(){ panel.innerHTML = '<div class="banner error">Request failed. Try again.</div>'; });
+      });
+    }
+
+    function bindJobPoll(){
+      var jobEl = panel.querySelector("[data-cluster-job-id]");
+      if (!jobEl) return;
+      var jobId = jobEl.getAttribute("data-cluster-job-id");
+      var phaseEl = panel.querySelector(".cluster-phase");
+      var banner = panel.querySelector(".cluster-banner");
+      var stopBtn = panel.querySelector(".cluster-stop-btn");
+
+      if (stopBtn) {
+        stopBtn.addEventListener("click", function(){
+          fetch("/ipindia/cluster/stop/" + jobId, { method: "POST" });
+        });
+      }
+
+      function poll(){
+        fetch("/ipindia/cluster/status/" + jobId)
+          .then(function(r){ return r.json(); })
+          .then(function(j){
+            if (j.status === "unknown") return;
+            if (phaseEl) phaseEl.textContent = j.phase || "Working…";
+            panel.querySelector(".cluster-stat-hits").textContent = j.hits.length;
+            panel.querySelector(".cluster-stat-candidates").textContent = j.total_candidates;
+            panel.querySelector(".cluster-stat-skipped").textContent = j.skipped_existing;
+            panel.querySelector(".cluster-stat-attempts").textContent = j.attempts_count;
+            panel.querySelector(".cluster-stat-misses").textContent = j.misses_count;
+            panel.querySelector(".cluster-stat-errors").textContent = j.errors_count;
+
+            if (j.status === "running") {
+              setTimeout(poll, 2000);
+            } else {
+              if (banner) {
+                banner.className = "banner " + (j.status === "error" ? "error" : "success") + " cluster-banner";
+                banner.textContent = j.message || "Finished.";
+              }
+              if (stopBtn) stopBtn.style.display = "none";
+            }
+          })
+          .catch(function(){ setTimeout(poll, 3000); });
+      }
+      poll();
+    }
+
+    function bindAll(){
+      bindStartForm();
+      bindOtpForm();
+      bindJobPoll();
+    }
+    bindAll();
+  }
+
+  document.querySelectorAll('[id^="cluster-panel"]').forEach(wirePanel);
+
+  // Pre-existing running jobs (shown from active_job_ids on page load) —
+  // load their status fragment immediately so the poller can attach.
+  {% for job_id in active_job_ids %}
+  (function(){
+    var panel = document.getElementById("cluster-panel-{{ job_id }}");
+    if (!panel) return;
+    panel.innerHTML = '<div data-cluster-job-id="{{ job_id }}">' +
+      '<div class="banner progress cluster-banner"><div style="display:flex;align-items:center;gap:10px;font-weight:600">' +
+      '<div class="spinner"></div><span class="cluster-phase">Working…</span></div></div>' +
+      '<div style="display:flex;gap:24px;flex-wrap:wrap;margin:16px 0">' +
+      '<div><div class="field-label">Saved</div><div class="cluster-stat-hits" style="font-size:1.3rem;font-weight:700">0</div></div>' +
+      '<div><div class="field-label">Candidates found</div><div class="cluster-stat-candidates" style="font-size:1.3rem;font-weight:700">0</div></div>' +
+      '<div><div class="field-label">Already known</div><div class="cluster-stat-skipped" style="font-size:1.3rem;font-weight:700">0</div></div>' +
+      '<div><div class="field-label">Attempts</div><div class="cluster-stat-attempts" style="font-size:1.3rem;font-weight:700">0</div></div>' +
+      '<div><div class="field-label">Misses</div><div class="cluster-stat-misses" style="font-size:1.3rem;font-weight:700">0</div></div>' +
+      '<div><div class="field-label">Errors</div><div class="cluster-stat-errors" style="font-size:1.3rem;font-weight:700">0</div></div>' +
+      '</div><button type="button" class="btn-secondary cluster-stop-btn" style="border-color:var(--error-text);color:var(--error-text)">Stop</button></div>';
+    wirePanel(panel);
+  })();
+  {% endfor %}
+})();
+</script>
+
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Tasks & Compliances — {% endblock %}
+
+{% block extra_css %}
+  .page-head{margin-bottom:16px;}
+  .page-head h1{font-size:17px;font-weight:700;margin-bottom:2px;}
+  .page-head p{font-size:12.5px;color:var(--muted-fg);}
+  .subj-cell{font-weight:500;font-size:12.5px;}
+  .empty-state{padding:50px 0;text-align:center;color:var(--muted-fg);font-size:13.5px;}
+{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Tasks & Compliances</h1>
+  <p>Reminder notices issued by the Registry for your portfolio, most recent first. IP India publishes these after something is already due, so this is a history log rather than a forward-looking calendar.</p>
+</div>
+
+{% if reminders %}
+<div class="table-panel">
+  <table>
+    <thead>
+      <tr>
+        <th>App. Num</th>
+        <th>Word Mark</th>
+        <th>Reminder</th>
+        <th>Despatch Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in reminders %}
+      <tr class="row-link" onclick="window.location='{{ url_for('trademark_detail', id_=r.tm_id) }}'">
+        <td><span class="app-no-link">{{ r.app_no }}</span></td>
+        <td>{{ r.word_mark or r.label or '—' }}</td>
+        <td class="subj-cell">{{ r.subject }}</td>
+        <td class="date-cell">{{ r.despatch_date or r.corres_date or '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <p>No reminder notices on file yet.</p>
+</div>
+{% endif %}
+{% endblock %}

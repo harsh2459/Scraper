@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>
+        window.FontAwesomeConfig = {
+          autoReplaceSvg: 'nest'
+        };
+      </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status Changes — MyTmManager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Inter"', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#eef2ff', 100: '#e0e7ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' },
+                        ink: { 900: '#1d2939', 700: '#3f4a5b', 500: '#667085', 400: '#98a2b3' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-[#f8f9fa] text-ink-900 antialiased h-screen flex flex-col overflow-hidden font-sans">
+
+    <!-- Top Bar -->
+    <header class="h-16 bg-white border-b border-[#e4e7ec] flex items-center justify-between px-6 shrink-0 z-20 relative">
+        <div class="flex items-center gap-2 w-60">
+            <div class="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
+                <i class="ph-bold ph-shield-check text-white text-lg"></i>
+            </div>
+            <span class="font-bold text-lg tracking-tight text-ink-900">MyTmManager</span>
+        </div>
+
+        <div class="flex-1 max-w-xl mx-auto hidden md:flex items-center">
+            <div class="relative w-full">
+                <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 text-base"></i>
+                <input type="text" placeholder="Search status changes..." class="w-full pl-9 pr-4 py-2 text-sm bg-[#f4f5f7] border-none rounded-md focus:ring-2 focus:ring-brand-500 outline-none placeholder-ink-400 text-ink-700">
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <button class="w-9 h-9 flex items-center justify-center rounded-md text-ink-500 hover:bg-[#f4f5f7] transition-colors relative">
+                <i class="ph ph-bell text-lg"></i>
+                <span class="absolute top-2 right-2.5 w-2 h-2 bg-amber-500 border border-white rounded-full"></span>
+            </button>
+            <div class="flex items-center gap-3 pl-4 border-l border-[#e4e7ec] cursor-pointer">
+                <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-4.jpg" alt="Sarah" class="w-8 h-8 rounded-full object-cover">
+                <i class="ph ph-caret-down text-xs text-ink-400"></i>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-[240px] bg-white border-r border-[#e4e7ec] flex flex-col shrink-0 overflow-hidden z-10">
+            <div class="flex-1 overflow-y-auto">
+                <nav class="py-5 text-sm">
+                    <div class="px-5 mb-2">
+                        <p class="text-[10px] font-bold text-ink-400 tracking-wider uppercase">Workspace</p>
+                    </div>
+                    <ul class="mb-6">
+                        <li>
+                            <a href="Dashboard__desktop.html" class="flex items-center gap-3 px-5 py-2.5 text-ink-500 hover:bg-[#f8f9fa] hover:text-ink-900 transition-colors">
+                                <i class="ph ph-squares-four text-lg"></i> Dashboard
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="px-5 mb-2">
+                        <p class="text-[10px] font-bold text-ink-400 tracking-wider uppercase">My Portfolio</p>
+                    </div>
+                    <ul class="mb-6">
+                        <li>
+                            <a href="Trademarks__desktop.html" class="flex items-center gap-3 px-5 py-2.5 text-ink-500 hover:bg-[#f8f9fa] hover:text-ink-900 transition-colors">
+                                <i class="ph ph-list-bullets text-lg"></i> Trademarks
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="flex items-center gap-3 px-5 py-2.5 text-ink-500 hover:bg-[#f8f9fa] hover:text-ink-900 transition-colors">
+                                <i class="ph ph-plus-circle text-lg"></i> Add Trademarks
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="px-5 mb-2">
+                        <p class="text-[10px] font-bold text-ink-400 tracking-wider uppercase">Monitoring & Watch</p>
+                    </div>
+                    <ul class="mb-6">
+                        <li>
+                            <a href="TasksCompliances__desktop.html" class="flex items-center justify-between px-5 py-2.5 text-ink-500 hover:bg-[#f8f9fa] hover:text-ink-900 transition-colors">
+                                <div class="flex items-center gap-3"><i class="ph ph-calendar-check text-lg"></i> Tasks & Compliances</div>
+                                <span class="text-[10px] font-bold bg-rose-50 text-rose-600 px-1.5 py-0.5 rounded-full">12</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="px-5 mb-2">
+                        <p class="text-[10px] font-bold text-ink-400 tracking-wider uppercase">All Updates</p>
+                    </div>
+                    <ul class="mb-6">
+                        <li>
+                            <a href="StatusChanges__desktop.html" class="flex items-center gap-3 px-5 py-2.5 bg-brand-50 border-r-2 border-brand-600 text-brand-700 font-medium transition-colors">
+                                <i class="ph-fill ph-arrows-left-right text-lg"></i> Status Changes
+                            </a>
+                        </li>
+                        <li>
+                            <a href="NewDocuments__desktop.html" class="flex items-center justify-between px-5 py-2.5 text-ink-500 hover:bg-[#f8f9fa] hover:text-ink-900 transition-colors">
+                                <div class="flex items-center gap-3"><i class="ph ph-file-text text-lg"></i> New Documents</div>
+                                <span class="text-[10px] font-bold bg-ink-100 text-ink-700 px-1.5 py-0.5 rounded-full">14</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="px-5 mb-2">
+                        <p class="text-[10px] font-bold text-ink-400 tracking-wider uppercase">TM Watch</p>
+                    </div>
+                    <ul class="mb-6">
+                        <li>
+                            <a href="JournalWatch__desktop.html" class="flex items-center justify-between px-5 py-2.5 text-ink-500 hover:bg-[#f8f9fa] hover:text-ink-900 transition-colors">
+                                <div class="flex items-center gap-3"><i class="ph ph-newspaper text-lg"></i> Journal Watch</div>
+                                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col min-w-0 bg-white">
+            <div class="px-6 py-4 border-b border-[#e4e7ec] flex items-center justify-between">
+                <div>
+                    <h1 class="text-lg font-bold text-ink-900">Status Changes</h1>
+                    <p class="text-xs text-ink-500">Real-time tracking of trademark lifecycle transitions</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button class="px-4 py-2 text-sm font-medium text-ink-700 bg-white border border-[#e4e7ec] rounded-lg hover:bg-[#f8f9fa] flex items-center gap-2">
+                        <i class="ph ph-export text-lg"></i> Export CSV
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-auto">
+                <table class="w-full text-left text-sm border-separate border-spacing-0">
+                    <thead class="sticky top-0 bg-[#f8f9fa] z-10">
+                        <tr>
+                            <th class="px-6 py-3 border-b border-[#e4e7ec] text-[11px] font-bold text-ink-400 uppercase tracking-wider">Trademark</th>
+                            <th class="px-3 py-3 border-b border-[#e4e7ec] text-[11px] font-bold text-ink-400 uppercase tracking-wider">Owner</th>
+                            <th class="px-3 py-3 border-b border-[#e4e7ec] text-[11px] font-bold text-ink-400 uppercase tracking-wider">From</th>
+                            <th class="px-3 py-3 border-b border-[#e4e7ec] text-[11px] font-bold text-ink-400 uppercase tracking-wider">To</th>
+                            <th class="px-3 py-3 border-b border-[#e4e7ec] text-[11px] font-bold text-ink-400 uppercase tracking-wider">Changed Date</th>
+                            <th class="px-6 py-3 border-b border-[#e4e7ec] text-[11px] font-bold text-ink-400 uppercase tracking-wider text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-[#e4e7ec]">
+                        <tr>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded bg-ink-50 flex items-center justify-center text-ink-400">
+                                        <i class="ph ph-shield-check text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-ink-900">SecureVault</p>
+                                        <p class="text-[11px] text-ink-400">App No. 302284710</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-3 py-4 text-xs text-ink-700">Sentinel Security Corp.</td>
+                            <td class="px-3 py-4">
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 text-indigo-600 border border-indigo-100">In Review</span>
+                            </td>
+                            <td class="px-3 py-4">
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100">Registered</span>
+                            </td>
+                            <td class="px-3 py-4 text-xs text-ink-500">May 28, 2026</td>
+                            <td class="px-6 py-4 text-right">
+                                <button class="text-xs font-semibold text-brand-600 hover:text-brand-700 bg-brand-50 px-3 py-1.5 rounded-md transition-colors">Send Email</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded bg-rose-50 flex items-center justify-center text-rose-600">
+                                        <i class="ph-fill ph-storefront text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-ink-900">Northwind Retail</p>
+                                        <p class="text-[11px] text-ink-400">App No. 88/41209</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-3 py-4 text-xs text-ink-700">Northwind Holdings LLC</td>
+                            <td class="px-3 py-4">
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100">Published</span>
+                            </td>
+                            <td class="px-3 py-4">
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-rose-600 border border-rose-100">Opposition Filed</span>
+                            </td>
+                            <td class="px-3 py-4 text-xs text-ink-500">May 27, 2026</td>
+                            <td class="px-6 py-4 text-right">
+                                <button class="text-xs font-semibold text-brand-600 hover:text-brand-700 bg-brand-50 px-3 py-1.5 rounded-md transition-colors">Send Email</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded bg-ink-50 flex items-center justify-center text-ink-400">
+                                        <i class="ph ph-cloud text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-ink-900">CloudBase SaaS</p>
+                                        <p class="text-[11px] text-ink-400">App No. 97654321</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-3 py-4 text-xs text-ink-700">CloudBase Systems</td>
+                            <td class="px-3 py-4">
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 text-indigo-600 border border-indigo-100">Application Filed</span>
+                            </td>
+                            <td class="px-3 py-4">
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-600 border border-amber-100">Office Action Issued</span>
+                            </td>
+                            <td class="px-3 py-4 text-xs text-ink-500">May 26, 2026</td>
+                            <td class="px-6 py-4 text-right">
+                                <button class="text-xs font-semibold text-brand-600 hover:text-brand-700 bg-brand-50 px-3 py-1.5 rounded-md transition-colors">Send Email</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

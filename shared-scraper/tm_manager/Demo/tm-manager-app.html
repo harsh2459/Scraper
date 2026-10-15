@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Docket — Trademark Portfolio Manager</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12203A; --ink-soft:#1E3151; --paper:#F5F6F3; --panel:#FFFFFF;
+    --seal:#1F6D5A; --seal-soft:#E7F0EC;
+    --amber:#B9791A; --amber-soft:#FBF0DD;
+    --red:#B33A3A; --red-soft:#F7E7E5;
+    --blue:#2D5F8A; --blue-soft:#E7EEF4;
+    --slate:#5B6472; --slate-light:#8992A0;
+    --line:#E2E4DF; --line-strong:#CDD1C8;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;font-size:13.5px;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,.serif{font-family:'Source Serif 4',serif;letter-spacing:-0.01em;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;}
+  ::-webkit-scrollbar{width:9px;height:9px;}
+  ::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:6px;}
+
+  .shell{display:grid;grid-template-columns:236px 1fr;min-height:100vh;}
+
+  /* Sidebar */
+  .sidebar{background:var(--ink);color:#DCE3EE;padding:22px 16px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh;overflow-y:auto;}
+  .brand{display:flex;align-items:center;gap:10px;padding:0 4px 18px 4px;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:12px;}
+  .brand-mark{width:28px;height:28px;border:1.5px solid #7C93B8;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:'Source Serif 4',serif;font-weight:600;font-size:14px;color:#EDE7D6;flex-shrink:0;}
+  .brand-name{font-family:'Source Serif 4',serif;font-size:17px;font-weight:600;color:#F4F1E8;}
+  .nav-label{font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#6C7F9F;margin:12px 8px 3px 8px;}
+  .nav-item{display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:6px;font-size:13px;color:#B7C2D6;border:none;background:none;width:100%;text-align:left;}
+  .nav-item svg{width:14px;height:14px;opacity:0.8;flex-shrink:0;}
+  .nav-item:hover{background:rgba(255,255,255,0.05);color:#EAEFF6;}
+  .nav-item.active{background:#233860;color:#fff;}
+  .nav-item.active svg{opacity:1;}
+  .nav-count{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#8DA0BF;background:rgba(255,255,255,0.06);padding:1px 6px;border-radius:20px;}
+  .sidebar-foot{margin-top:auto;display:flex;align-items:center;gap:9px;padding:11px 9px;border-top:1px solid rgba(255,255,255,0.1);}
+  .avatar{width:30px;height:30px;border-radius:50%;background:#3A5178;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#EDE7D6;flex-shrink:0;}
+  .foot-name{font-size:12.5px;color:#EAEFF6;font-weight:500;}
+  .foot-plan{font-size:10.5px;color:#8DA0BF;}
+
+  main{position:relative;min-width:0;}
+  .view{display:none;padding:24px 30px 60px 30px;}
+  .view.active{display:block;}
+
+  .view-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
+  .view-head h1{font-size:20px;font-weight:600;margin:0;display:flex;align-items:center;gap:10px;}
+  .btn{display:flex;align-items:center;gap:6px;border-radius:7px;padding:8px 13px;font-size:12.5px;font-weight:500;border:1px solid var(--line-strong);background:var(--panel);color:var(--ink);}
+  .btn svg{width:13px;height:13px;}
+  .btn:hover{border-color:var(--slate-light);}
+  .btn-dark{background:var(--ink);color:#F4F1E8;border-color:var(--ink);}
+  .btn-dark:hover{background:var(--ink-soft);}
+  .btn-ghost{border-color:transparent;background:transparent;color:var(--slate);}
+  .btn-ghost:hover{background:#EEF0EC;}
+
+  /* ---------- Dashboard ---------- */
+  .greet p{color:var(--slate);margin:2px 0 0 0;font-size:13px;}
+  .dash-grid{display:grid;grid-template-columns:2.4fr 1fr;gap:18px;margin-top:20px;align-items:start;}
+  .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;}
+  .stat:hover{border-color:var(--slate-light);}
+  .stat-value{font-family:'Source Serif 4',serif;font-size:26px;font-weight:600;}
+  .stat-label{font-size:12px;color:var(--slate);margin-top:2px;}
+  .stat svg{width:15px;height:15px;color:var(--slate-light);}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:18px;}
+  .card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .card-head h3{font-size:14.5px;font-weight:600;margin:0;}
+  .card-head .sub{font-size:11.5px;color:var(--slate);}
+
+  .deadline-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
+  .day-col{border:1px solid var(--line);border-radius:9px;padding:10px;min-height:90px;}
+  .day-col.today{border-color:var(--ink);background:#F9FAF8;}
+  .day-label{font-size:10.5px;font-weight:600;letter-spacing:0.03em;color:var(--slate);display:flex;justify-content:space-between;align-items:center;}
+  .day-tag{font-size:9px;background:var(--ink);color:#fff;padding:1px 6px;border-radius:10px;}
+  .task-chip{margin-top:8px;background:var(--amber-soft);color:#8A5D12;font-size:11px;border-radius:6px;padding:6px 8px;line-height:1.3;}
+  .task-chip .mono{display:block;font-size:10px;color:#8A5D12;opacity:0.8;margin-top:2px;}
+  .no-task{font-size:11px;color:var(--slate-light);margin-top:10px;}
+
+  .bars{display:flex;align-items:flex-end;gap:3px;height:120px;margin-top:6px;}
+  .bar{flex:1;background:#E8A15A;border-radius:2px 2px 0 0;min-height:2px;}
+  .bar.hi{background:var(--ink);}
+  .bar-axis{display:flex;justify-content:space-between;font-size:9.5px;color:var(--slate-light);margin-top:6px;}
+
+  .feed-item{padding:10px 0;border-bottom:1px solid var(--line);}
+  .feed-item:last-child{border-bottom:none;}
+  .feed-date{font-size:10px;color:var(--slate-light);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:5px;}
+  .feed-row{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;padding:3px 0;}
+  .feed-name{font-weight:500;}
+  .feed-transition{color:var(--slate);font-size:11.5px;}
+  .feed-transition b{color:var(--seal);font-weight:500;}
+
+  .side-stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:16px;}
+  .side-stat .label{font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--slate-light);}
+  .side-stat .val{font-family:'IBM Plex Mono',monospace;font-size:22px;margin-top:6px;font-weight:500;}
+
+  /* ---------- Table ---------- */
+  .table-toolbar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
+  .select-box{border:1px solid var(--line-strong);border-radius:7px;padding:8px 11px;font-size:12.5px;color:var(--ink);background:var(--panel);display:flex;align-items:center;gap:6px;}
+  .search-box{flex:1;min-width:220px;display:flex;align-items:center;gap:8px;border:1px solid var(--line-strong);border-radius:7px;padding:8px 12px;background:var(--panel);}
+  .search-box svg{width:14px;height:14px;color:var(--slate-light);}
+  .search-box input{border:none;outline:none;font-size:12.5px;width:100%;font-family:inherit;}
+
+  .table-panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+  table{width:100%;border-collapse:collapse;}
+  thead th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:0.05em;color:var(--slate-light);font-weight:500;padding:11px 14px;background:#FAFAF8;border-bottom:1px solid var(--line);white-space:nowrap;}
+  tbody td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr{cursor:pointer;}
+  tbody tr:hover{background:#FBFBF9;}
+  .cell-mark{display:flex;align-items:center;gap:10px;}
+  .mark-swatch{width:30px;height:30px;border-radius:6px;background:var(--ink);color:#F4F1E8;display:flex;align-items:center;justify-content:center;font-family:'Source Serif 4',serif;font-size:13px;font-weight:600;flex-shrink:0;}
+  .mark-name-cell{font-weight:500;font-size:13px;}
+  .app-link{color:var(--blue);font-family:'IBM Plex Mono',monospace;font-size:12.5px;}
+  .class-cell{color:var(--slate);}
+  .status-pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;white-space:nowrap;}
+  .status-pill.seal{background:var(--seal-soft);color:var(--seal);}
+  .status-pill.amber{background:var(--amber-soft);color:var(--amber);}
+  .status-pill.red{background:var(--red-soft);color:var(--red);}
+  .status-pill.blue{background:var(--blue-soft);color:var(--blue);}
+  .dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+  .proprietor-cell{color:var(--slate);font-size:12.5px;}
+  .table-foot{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;font-size:12px;color:var(--slate);border-top:1px solid var(--line);}
+  .pager{display:flex;align-items:center;gap:10px;}
+  .pager button{border:1px solid var(--line-strong);background:var(--panel);border-radius:6px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;}
+  .pager button svg{width:13px;height:13px;}
+
+  /* ---------- Detail slide-over ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(18,32,58,0.35);opacity:0;pointer-events:none;transition:opacity .18s ease;z-index:40;}
+  .overlay.open{opacity:1;pointer-events:auto;}
+  .detail-panel{position:fixed;top:0;right:-560px;width:560px;max-width:92vw;height:100vh;background:var(--panel);box-shadow:-8px 0 30px rgba(18,32,58,0.15);transition:right .22s ease;z-index:41;overflow-y:auto;}
+  .detail-panel.open{right:0;}
+  .detail-top{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2;}
+  .detail-top-left{display:flex;align-items:center;gap:12px;}
+  .close-x{width:30px;height:30px;border-radius:7px;border:1px solid var(--line-strong);display:flex;align-items:center;justify-content:center;background:var(--panel);}
+  .close-x svg{width:14px;height:14px;}
+  .detail-body{padding:22px;}
+  .detail-hero{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;}
+  .detail-hero h2{font-size:22px;margin:0;font-weight:600;}
+  .detail-hero .swatch{width:56px;height:56px;border-radius:10px;background:var(--ink);color:#F4F1E8;display:flex;align-items:center;justify-content:center;font-family:'Source Serif 4',serif;font-size:22px;font-weight:600;flex-shrink:0;}
+  .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 20px;padding:18px 0;border-top:1px solid var(--line);}
+  .field .label{font-size:10.5px;text-transform:uppercase;letter-spacing:0.04em;color:var(--slate-light);margin-bottom:4px;}
+  .field .val{font-size:13px;}
+  .field .val.mono{font-family:'IBM Plex Mono',monospace;}
+  .field .val a{color:var(--blue);}
+  .detail-section{padding:18px 0;border-top:1px solid var(--line);}
+  .detail-section h4{font-size:12px;text-transform:uppercase;letter-spacing:0.04em;color:var(--slate-light);margin:0 0 8px 0;font-weight:600;}
+  .class-detail-text{font-size:12.5px;line-height:1.6;color:var(--ink);}
+  .class-detail-text b{background:var(--seal-soft);color:var(--seal);padding:1px 6px;border-radius:5px;font-weight:600;}
+  .doc-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:12.5px;}
+  .doc-row:last-child{border-bottom:none;}
+  .doc-row a{color:var(--blue);font-weight:500;}
+  .doc-date{color:var(--slate-light);font-family:'IBM Plex Mono',monospace;font-size:11px;}
+
+  /* ---------- Add to portfolio ---------- */
+  .tabs{display:flex;gap:4px;background:#EEF0EC;border-radius:8px;padding:3px;width:fit-content;margin-bottom:18px;}
+  .tab{padding:8px 16px;border-radius:6px;font-size:12.5px;font-weight:500;color:var(--slate);border:none;background:transparent;}
+  .tab.active{background:var(--panel);color:var(--ink);box-shadow:0 1px 2px rgba(18,32,58,0.08);}
+  .paste-hint{font-size:12.5px;color:var(--slate);margin-bottom:12px;max-width:520px;line-height:1.5;}
+  textarea{width:100%;max-width:640px;min-height:220px;border:1px solid var(--line-strong);border-radius:10px;padding:16px;font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.7;color:var(--ink);resize:vertical;}
+  textarea:focus{outline:none;border-color:var(--ink);}
+  .paste-foot{display:flex;justify-content:flex-end;gap:10px;max-width:640px;margin-top:14px;}
+  .paste-note{max-width:640px;margin-top:16px;background:var(--seal-soft);color:var(--seal);border-radius:9px;padding:12px 16px;font-size:12.5px;display:flex;gap:9px;align-items:flex-start;}
+  .paste-note svg{width:15px;height:15px;flex-shrink:0;margin-top:1px;}
+
+  @media (max-width:980px){
+    .shell{grid-template-columns:1fr;}
+    .sidebar{display:none;}
+    .dash-grid{grid-template-columns:1fr;}
+    .stat-row{grid-template-columns:1fr;}
+    .deadline-strip{grid-template-columns:repeat(2,1fr);}
+    .field-grid{grid-template-columns:1fr;}
+    .detail-panel{width:100vw;}
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">D</div>
+      <div class="brand-name">Docket</div>
+    </div>
+
+    <button class="nav-item active" id="nav-dashboard" onclick="showView('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+      Dashboard
+    </button>
+
+    <div class="nav-label">My Portfolio</div>
+    <button class="nav-item active" id="nav-portfolio" onclick="showView('portfolio')" style="background:#233860;color:#fff;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 4v16"/></svg>
+      Trademarks <span class="nav-count">218</span>
+    </button>
+    <button class="nav-item" onclick="alert('Oppositions view — same table pattern as Trademarks, filtered to opposition proceedings.')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+      Oppositions <span class="nav-count">2</span>
+    </button>
+    <button class="nav-item" id="nav-add" onclick="showView('add')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+      Add TMs/Oppositions
+    </button>
+
+    <div class="nav-label">Monitoring &amp; Watch</div>
+    <button class="nav-item" onclick="alert('Tasks & Compliances — deadline checklist per application, assignable to staff.')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Tasks &amp; Compliances
+    </button>
+    <button class="nav-item" onclick="alert('All Updates — full status-change feed across the portfolio, filterable by client.')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+      All Updates
+    </button>
+    <button class="nav-item" onclick="alert('TM Watch — journal similarity matching against your portfolio, published weekly.')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+      TM Watch <span class="nav-count">5</span>
+    </button>
+
+    <div class="nav-label">TM Public</div>
+    <button class="nav-item" onclick="alert('TM Search — search the full public Registry, independent of your portfolio.')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+      TM Search
+    </button>
+    <button class="nav-item" onclick="alert('TM Status — one-off status lookup by application number.')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+      TM Status
+    </button>
+    <button class="nav-item" onclick="alert('Access Journals — browse and download past weekly Trade Marks Journal issues.')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/></svg>
+      Access Journals
+    </button>
+
+    <div class="nav-label">Integrations</div>
+    <button class="nav-item" onclick="alert('MCA Search — cross-check a proprietor against Ministry of Corporate Affairs records.')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6v6H9z"/></svg>
+      MCA Search
+    </button>
+
+    <div class="sidebar-foot">
+      <div class="avatar">RM</div>
+      <div>
+        <div class="foot-name">Rashmi Mehta</div>
+        <div class="foot-plan">Studio plan · 218 marks</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+  <main>
+
+    <!-- ============ DASHBOARD ============ -->
+    <section class="view active" id="dashboard">
+      <div class="greet">
+        <h1>Hello, Rashmi.</h1>
+        <p>Portfolio, deadlines and recent movement in one view.</p>
+      </div>
+
+      <div class="dash-grid">
+        <div>
+          <div class="stat-row">
+            <div class="stat" onclick="showView('portfolio')">
+              <div><div class="stat-value mono">218</div><div class="stat-label">Trademarks</div></div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+            <div class="stat">
+              <div><div class="stat-value mono">2</div><div class="stat-label">Inbound Oppositions</div></div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+            <div class="stat">
+              <div><div class="stat-value mono">0</div><div class="stat-label">Outbound Oppositions</div></div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h3>Priority deadlines</h3>
+              <span class="sub">This week</span>
+            </div>
+            <div class="deadline-strip">
+              <div class="day-col"><div class="day-label">19 WED</div><div class="no-task">No tasks</div></div>
+              <div class="day-col today">
+                <div class="day-label">20 THU <span class="day-tag">TODAY</span></div>
+                <div class="task-chip">Examination report due<span class="mono">#6930884</span></div>
+              </div>
+              <div class="day-col">
+                <div class="day-label">21 FRI</div>
+                <div class="task-chip">Reply Exam Rpt U/S 9<span class="mono">#6825223</span></div>
+                <div class="task-chip">Reply Exam Rpt U/S 11<span class="mono">#6825000</span></div>
+              </div>
+              <div class="day-col"><div class="day-label">22 SAT</div><div class="no-task">No tasks</div></div>
+              <div class="day-col"><div class="day-label">23 SUN</div><div class="no-task">No tasks</div></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h3>Monthly filing report</h3>
+              <span class="sub">Total 218 · last 10 years</span>
+            </div>
+            <div class="bars" id="filingBars"></div>
+            <div class="bar-axis"><span>2017</span><span>2019</span><span>2021</span><span>2023</span><span>2025</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="side-stat">
+            <div class="label">Expected examinations (7&nbsp;/&nbsp;30 days)</div>
+            <div class="val">0 / 4</div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h3>Recent status updates</h3></div>
+            <div class="feed-date">20 Aug 2026</div>
+            <div class="feed-row"><span class="feed-name">Ayvozu</span><span class="feed-transition">Send To Vienna Codification → <b>Formalities Chk Pass</b></span></div>
+            <div class="feed-date" style="margin-top:12px;">19 Aug 2026</div>
+            <div class="feed-row"><span class="feed-name">Credaura Financial</span><span class="feed-transition">Send To Vienna → <b>Formalities Chk Pass</b></span></div>
+            <div class="feed-row"><span class="feed-name">Meprotech</span><span class="feed-transition">Accepted &amp; Advertised → <b>Registered</b></span></div>
+            <div class="feed-date" style="margin-top:12px;">18 Aug 2026</div>
+            <div class="feed-row"><span class="feed-name">Tesselyra</span><span class="feed-transition">Formalities Pass → <b>Marked for Exam</b></span></div>
+            <div class="feed-row"><span class="feed-name">Natural Care Home</span><span class="feed-transition">Formalities Fail → <b>Marked for Exam</b></span></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h3>Recent document updates</h3></div>
+            <div class="feed-row"><span class="feed-name">TM-M Expedited Examination</span><span class="feed-transition mono">Ayvozu</span></div>
+            <div class="feed-row"><span class="feed-name">Reply to Exam Report</span><span class="feed-transition mono">Northline</span></div>
+            <div class="feed-row"><span class="feed-name">Registration Certificate</span><span class="feed-transition mono">Meprotech</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PORTFOLIO TABLE ============ -->
+    <section class="view" id="portfolio">
+      <div class="view-head">
+        <h1>Portfolio Trademarks</h1>
+        <div style="display:flex;gap:8px;">
+          <button class="btn" onclick="alert('Tags let you group marks by client, industry, or urgency.')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.6 11.4L12 2.8H4v8l8.6 8.6a2 2 0 0 0 2.8 0l5.2-5.2a2 2 0 0 0 0-2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>
+            Tags
+          </button>
+          <button class="btn" onclick="alert('Filters — narrow by status, class, date range, or client.')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+            Filters
+          </button>
+          <button class="btn btn-dark" onclick="showView('add')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            Add applications
+          </button>
+        </div>
+      </div>
+
+      <div class="table-toolbar">
+        <div class="select-box">Word Mark
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input id="tmSearch" type="text" placeholder="Search by mark name, application number or proprietor…" oninput="renderTable()">
+        </div>
+      </div>
+
+      <div class="table-panel">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:26px;"><input type="checkbox"></th>
+              <th>App. Num</th>
+              <th>Word Mark</th>
+              <th>Class</th>
+              <th>App. Date</th>
+              <th>Status</th>
+              <th>Proprietor</th>
+            </tr>
+          </thead>
+          <tbody id="tmTableBody"></tbody>
+        </table>
+        <div class="table-foot">
+          <span id="tableCount">0 of 218 row(s) selected.</span>
+          <div class="pager">
+            <span>Rows per page: 12</span>
+            <button onclick="return false;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <span>Page 1 of 19</span>
+            <button onclick="return false;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ADD TO PORTFOLIO ============ -->
+    <section class="view" id="add">
+      <div class="view-head"><h1>Add to portfolio</h1></div>
+
+      <div class="tabs">
+        <button class="tab active">My Applications</button>
+        <button class="tab">Outbound Oppositions</button>
+      </div>
+
+      <div class="paste-hint">
+        Paste application numbers your team owns or manages. Paste from Excel, CSV, comma-separated text, or one per line — we'll fetch status, class and owner details from the Registry automatically.
+      </div>
+
+      <textarea placeholder="7936098
+7931056
+7918928">7936098
+7931056
+7918928</textarea>
+
+      <div class="paste-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        We'll pull current status tonight and check for updates every night after that — no need to add these again.
+      </div>
+
+      <div class="paste-foot">
+        <button class="btn btn-ghost">Clear</button>
+        <button class="btn btn-dark">Add applications</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============ DETAIL SLIDE-OVER ============ -->
+<div class="overlay" id="overlay" onclick="closeDetail()"></div>
+<div class="detail-panel" id="detailPanel">
+  <div class="detail-top">
+    <div class="detail-top-left">
+      <span class="app-link mono" id="d-appnum">#7936098</span>
+      <button class="btn btn-ghost" style="padding:4px 9px;">Assign client</button>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn">Print</button>
+      <button class="btn">Live refresh</button>
+      <button class="close-x" onclick="closeDetail()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="detail-body">
+    <div class="detail-hero">
+      <div>
+        <h2 id="d-name">Ayvozu</h2>
+        <div id="d-status" class="status-pill seal" style="margin-top:8px;"><span class="dot"></span>Formalities Chk Pass</div>
+      </div>
+      <div class="swatch" id="d-swatch">A</div>
+    </div>
+
+    <div class="field-grid">
+      <div class="field"><div class="label">Application No.</div><div class="val mono" id="d-app2">7936098</div></div>
+      <div class="field"><div class="label">Class</div><div class="val" id="d-class">14</div></div>
+      <div class="field"><div class="label">Application Date</div><div class="val" id="d-date">18/08/2026</div></div>
+      <div class="field"><div class="label">User Detail</div><div class="val" id="d-user">Proposed to be used</div></div>
+      <div class="field"><div class="label">State</div><div class="val" id="d-state">Gujarat</div></div>
+      <div class="field"><div class="label">Office</div><div class="val" id="d-office">Ahmedabad</div></div>
+      <div class="field"><div class="label">Type</div><div class="val" id="d-type">Device</div></div>
+      <div class="field"><div class="label">Category</div><div class="val">Trade Mark</div></div>
+      <div class="field"><div class="label">Publication Date</div><div class="val" id="d-pubdate">—</div></div>
+      <div class="field"><div class="label">Filing Mode</div><div class="val">e-Filing</div></div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Owner</h4>
+      <div class="field"><div class="val" id="d-owner">Kotadiya Sonalben Nikunjbhai</div></div>
+      <div class="field" style="margin-top:8px;"><div class="label">Address</div><div class="val" id="d-owneraddr">241, Santoshi Krupa Society, Near Sitanagar Chowk, Bombay Market, Surat–395010</div></div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Attorney</h4>
+      <div class="field"><div class="val"><a href="#">Nirav Vinubhai Galani [39658]</a></div></div>
+      <div class="field" style="margin-top:8px;"><div class="label">Address</div><div class="val">206, Sunrise Commercial Complex, Nr. Savjibhai Korat Bridge, Lajamani Chowk, Shanti Niketan Society, Mota Varachha, Surat, Gujarat – 394105</div></div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Class detail</h4>
+      <div class="class-detail-text"><b>Class <span id="d-class2">14</span></b> — <span id="d-classdetail">Precious metals and their alloys; precious and semi-precious stones; gemstones; jewellery; imitation jewellery; fashion jewellery; ornamental jewellery; bracelets, necklaces, chains, pendants, rings, earrings, brooches, cufflinks; watches, wrist watches, clocks; horological and chronometric instruments — all being goods included in Class 14.</span></div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Uploaded documents</h4>
+      <div class="doc-row"><a href="#">TM-M (Expedited Examination)</a><span class="doc-date">19/08/2026</span></div>
+      <div class="doc-row"><a href="#">Power of Attorney</a><span class="doc-date">18/08/2026</span></div>
+      <div class="doc-row"><a href="#">Form TM-A</a><span class="doc-date">18/08/2026</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---- sample portfolio data ----
+  const marks = [
+    {app:'7936098', name:'Ayvozu', class:14, date:'18/08/2026', status:'Formalities Chk Pass', tone:'seal', owner:'Kotadiya Sonalben Nikunjbhai', ownerAddr:'241, Santoshi Krupa Society, Near Sitanagar Chowk, Bombay Market, Surat–395010', type:'Device', state:'Gujarat', office:'Ahmedabad', user:'Proposed to be used', classDetail:'Precious metals and their alloys; precious and semi-precious stones; gemstones; jewellery; imitation jewellery; fashion jewellery; ornamental jewellery; bracelets, necklaces, chains, pendants, rings, earrings, brooches, cufflinks; watches, wrist watches, clocks; horological and chronometric instruments — all being goods included in Class 14.'},
+    {app:'7931056', name:'Wafloo', class:21, date:'15/08/2026', status:'Send To Vienna Codification', tone:'blue', owner:'Sutariya Shital Chirag Singh', ownerAddr:'14, Krishna Nagar Society, Ring Road, Surat–395002', type:'Device', state:'Gujarat', office:'Ahmedabad', user:'Proposed to be used', classDetail:'Household or kitchen utensils and containers; cookware and tableware, except forks, knives and spoons; combs and sponges; brushes; articles for cleaning purposes; unworked or semi-worked glass — all being goods included in Class 21.'},
+    {app:'7918928', name:'Meksora Publicity Company', class:35, date:'10/08/2026', status:'Send To Vienna Codification', tone:'blue', owner:'Patel Sujal Rasikbhai', ownerAddr:'88, GIDC Estate, Udhna, Surat–394210', type:'Device', state:'Gujarat', office:'Ahmedabad', user:'Proposed to be used', classDetail:'Advertising; business management; business administration; office functions; marketing and promotional services — all being services included in Class 35.'},
+    {app:'7912118', name:'Kynvora', class:25, date:'07/08/2026', status:'Send To Vienna Codification', tone:'blue', owner:'Sandip Dhirubhai Pokiya', ownerAddr:'5, Textile Market, Ring Road, Surat–395002', type:'Device', state:'Gujarat', office:'Ahmedabad', user:'Proposed to be used', classDetail:'Clothing, footwear, headgear — all being goods included in Class 25.'},
+    {app:'7911435', name:'Shivansh Vanrika', class:25, date:'06/08/2026', status:'Send To Vienna Codification', tone:'blue', owner:'Savaliya Mitalben Jeetinkbhai', ownerAddr:'12, New Cloth Market, Surat–395003', type:'Device', state:'Gujarat', office:'Ahmedabad', user:'Proposed to be used', classDetail:'Clothing, footwear, headgear — all being goods included in Class 25.'},
+    {app:'7907448', name:'Anantam Water', class:32, date:'05/08/2026', status:'Send To Vienna Codification', tone:'blue', owner:'RS FLVR Water Partnership Firm', ownerAddr:'Plot 22, MIDC Industrial Area, Surat–394230', type:'Word', state:'Gujarat', office:'Ahmedabad', user:'Used since 2024', classDetail:'Beers; mineral and aerated waters; non-alcoholic beverages; fruit drinks and fruit juices; syrups for making beverages — all being goods included in Class 32.'},
+    {app:'7899829', name:'Credaura Financial Services', class:36, date:'01/08/2026', status:'Formalities Chk Pass', tone:'seal', owner:'Devmurari Jay Rameshbhai', ownerAddr:'301, Business Bay, Ring Road, Surat–395002', type:'Word', state:'Gujarat', office:'Ahmedabad', user:'Proposed to be used', classDetail:'Insurance; financial affairs; monetary affairs; real estate affairs — all being services included in Class 36.'},
+    {app:'7880316', name:'Nayryn Creation', class:25, date:'24/07/2026', status:'Formalities Chk Pass', tone:'seal', owner:'Gorasiya Utsav Rameshbhai', ownerAddr:'9, Bombay Market, Surat–395010', type:'Device', state:'Gujarat', office:'Ahmedabad', user:'Proposed to be used', classDetail:'Clothing, footwear, headgear — all being goods included in Class 25.'},
+    {app:'7874709', name:'Cropagrit', class:3, date:'22/07/2026', status:'Formalities Chk Pass', tone:'seal', owner:'Baldaniya Madhiben Ramesh', ownerAddr:'17, Agro Market Yard, Rajkot–360001', type:'Device', state:'Gujarat', office:'Ahmedabad', user:'Proposed to be used', classDetail:'Cosmetics; cleaning preparations; soaps; perfumery; essential oils — all being goods included in Class 3.'},
+    {app:'7874631', name:'Nirvanaweaves', class:25, date:'22/07/2026', status:'Formalities Chk Pass', tone:'seal', owner:'Vikram Lohia, Single Firm', ownerAddr:'44, Weavers Colony, Surat–395006', type:'Word', state:'Gujarat', office:'Ahmedabad', user:'Proposed to be used', classDetail:'Clothing, footwear, headgear — all being goods included in Class 25.'},
+    {app:'7875676', name:'Sharva', class:14, date:'22/07/2026', status:'Formalities Chk Pass', tone:'seal', owner:'Vaghani Hirenkumar Kantilal', ownerAddr:'6, Jewellers Lane, Surat–395003', type:'Device', state:'Gujarat', office:'Ahmedabad', user:'Proposed to be used', classDetail:'Precious metals and jewellery; watches and clocks — all being goods included in Class 14.'},
+    {app:'7863984', name:'Jency Fashion', class:25, date:'17/07/2026', status:'Formalities Chk Pass', tone:'seal', owner:'Vipulbhai Balubhai Kheni', ownerAddr:'19, Fashion Street, Surat–395002', type:'Device', state:'Gujarat', office:'Ahmedabad', user:'Proposed to be used', classDetail:'Clothing, footwear, headgear — all being goods included in Class 25.'},
+    {app:'7858498', name:'Zenraa', class:25, date:'15/07/2026', status:'Formalities Chk Pass', tone:'seal', owner:'Gadhiya Harsh Sureshbhai', ownerAddr:'3, Silk Mill Road, Surat–395006', type:'Device', state:'Gujarat', office:'Ahmedabad', user:'Proposed to be used', classDetail:'Clothing, footwear, headgear — all being goods included in Class 25.'},
+    {app:'7845408', name:'Athar Collection', class:35, date:'08/07/2026', status:'Formalities Chk Pass', tone:'seal', owner:'Mohammed Shahid Salim', ownerAddr:'21, Zampa Bazaar, Surat–395003', type:'Device', state:'Gujarat', office:'Ahmedabad', user:'Proposed to be used', classDetail:'Advertising; business management; retail and wholesale services — all being services included in Class 35.'},
+  ];
+
+  function statusTone(s){
+    if(s==='Registered') return 'seal';
+    if(s.includes('Formalities Chk Pass') || s==='Accepted & Advertised') return 'seal';
+    if(s.includes('Vienna')) return 'blue';
+    if(s.includes('Objected')||s.includes('Fail')) return 'red';
+    return 'amber';
+  }
+
+  function renderTable(){
+    const q = document.getElementById('tmSearch').value.toLowerCase();
+    const body = document.getElementById('tmTableBody');
+    body.innerHTML = '';
+    const filtered = marks.filter(m => !q || m.name.toLowerCase().includes(q) || m.app.includes(q) || m.owner.toLowerCase().includes(q));
+    filtered.forEach(m=>{
+      const tr = document.createElement('tr');
+      tr.onclick = ()=>openDetail(m);
+      tr.innerHTML = `
+        <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+        <td><span class="app-link">${m.app}</span></td>
+        <td><div class="cell-mark"><div class="mark-swatch">${m.name.charAt(0)}</div><div class="mark-name-cell">${m.name}</div></div></td>
+        <td class="class-cell">${m.class}</td>
+        <td class="class-cell mono">${m.date}</td>
+        <td><span class="status-pill ${statusTone(m.status)}"><span class="dot"></span>${m.status}</span></td>
+        <td class="proprietor-cell">${m.owner}</td>
+      `;
+      body.appendChild(tr);
+    });
+    document.getElementById('tableCount').textContent = `0 of ${marks.length} row(s) selected.`;
+  }
+
+  function openDetail(m){
+    document.getElementById('d-appnum').textContent = '#'+m.app;
+    document.getElementById('d-app2').textContent = m.app;
+    document.getElementById('d-name').textContent = m.name;
+    document.getElementById('d-swatch').textContent = m.name.charAt(0);
+    const pill = document.getElementById('d-status');
+    pill.className = 'status-pill '+statusTone(m.status);
+    pill.innerHTML = '<span class="dot"></span>'+m.status;
+    document.getElementById('d-class').textContent = m.class;
+    document.getElementById('d-class2').textContent = m.class;
+    document.getElementById('d-date').textContent = m.date;
+    document.getElementById('d-user').textContent = m.user;
+    document.getElementById('d-state').textContent = m.state;
+    document.getElementById('d-office').textContent = m.office;
+    document.getElementById('d-type').textContent = m.type;
+    document.getElementById('d-owner').textContent = m.owner;
+    document.getElementById('d-owneraddr').textContent = m.ownerAddr;
+    document.getElementById('d-classdetail').textContent = m.classDetail;
+    document.getElementById('overlay').classList.add('open');
+    document.getElementById('detailPanel').classList.add('open');
+  }
+  function closeDetail(){
+    document.getElementById('overlay').classList.remove('open');
+    document.getElementById('detailPanel').classList.remove('open');
+  }
+
+  function showView(view){
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById(view).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n=>{n.classList.remove('active'); n.style.background=''; n.style.color='';});
+    const navMap = {dashboard:'nav-dashboard', portfolio:'nav-portfolio', add:'nav-add'};
+    if(navMap[view]) document.getElementById(navMap[view]).classList.add('active');
+  }
+
+  // filing report bars: sparse early years, dense recent — matches an accelerating filing practice
+  (function(){
+    const data = [2,3,1,0,0,4,5,4,0,3,6,7,5,8,9,6,10,9,11,12,8,10,13,9,15,11,14,16,10,17,13,18,20,16,22];
+    const wrap = document.getElementById('filingBars');
+    const max = Math.max(...data);
+    data.forEach((v,i)=>{
+      const bar = document.createElement('div');
+      bar.className = 'bar' + (i > data.length-4 ? ' hi' : '');
+      bar.style.height = Math.max(4, (v/max)*100) + '%';
+      wrap.appendChild(bar);
+    });
+  })();
+
+  renderTable();
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+requests>=2.31
+beautifulsoup4>=4.12
+flask>=3.0
+pdfplumber>=0.10
+psycopg[binary]>=3.2
+psycopg_pool>=3.2
+certifi>=2024.0
+waitress>=3.0
+openpyxl>=3.1
+reportlab>=5.0
+google-auth>=2.35
+google-auth-oauthlib>=1.2
+google-api-python-client>=2.150
+fake-useragent>=1.5
+sentry-sdk[flask]>=2.0
+cryptography>=42.0
+
+# NOTE: Email OTP automation uses only Python built-ins (imaplib, ssl, email).
+# IMAP IDLE fast-path uses imaplib's native idle() (Python 3.13+).

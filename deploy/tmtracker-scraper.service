@@ -1,0 +1,26 @@
+[Unit]
+Description=TM Tracker - Scraper (IP India engine)
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=tmtracker
+Group=tmtracker
+WorkingDirectory=/opt/tmtracker
+Environment=USE_WAITRESS=1
+# (config.py auto-points the CA bundle at certifi if the system env is broken)
+ExecStart=/opt/tmtracker/.venv/bin/python /opt/tmtracker/app.py
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/log/tmtracker/scraper.log
+StandardError=append:/var/log/tmtracker/scraper.err
+
+# hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/opt/tmtracker /var/log/tmtracker
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Add to portfolio — {% endblock %}
+
+{% block extra_css %}
+  .add-wrap{max-width:640px;}
+  .tabs{display:flex;gap:4px;background:var(--muted2);border-radius:6px;padding:3px;width:fit-content;margin-bottom:18px;}
+  .tab{padding:6px 14px;border-radius:4px;font-size:12.5px;font-weight:500;color:var(--muted-fg);border:none;background:transparent;cursor:pointer;}
+  .tab.active{background:var(--panel);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,0.08);}
+  .hint{font-size:12.5px;color:var(--muted-fg);margin-bottom:12px;line-height:1.6;max-width:580px;}
+  .form-row{margin-bottom:14px;}
+  .form-row label{display:block;font-size:11px;font-weight:600;color:var(--muted-fg);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.04em;}
+  input[type=text]{width:100%;border:1px solid var(--border2);border-radius:5px;padding:8px 10px;font-family:inherit;font-size:13px;color:var(--fg);outline:none;}
+  input[type=text]:focus{border-color:var(--blue);}
+  textarea{width:100%;min-height:190px;border:1px solid var(--border2);border-radius:6px;padding:12px;font-family:monospace;font-size:12.5px;line-height:1.7;color:var(--fg);resize:vertical;outline:none;}
+  textarea:focus{border-color:var(--blue);}
+  .paste-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:12px;}
+  .note-box{max-width:580px;margin-top:14px;background:var(--s-teal-bg);color:var(--s-teal);border-radius:6px;padding:10px 14px;font-size:12.5px;display:flex;gap:8px;align-items:flex-start;line-height:1.5;}
+  .banner{max-width:580px;border-radius:6px;padding:10px 14px;font-size:12.5px;margin-bottom:14px;}
+  .banner.error{background:var(--s-red-bg);color:var(--s-red);}
+  .banner.success{background:var(--s-teal-bg);color:var(--s-teal);}
+{% endblock %}
+
+{% block content %}
+<div class="view-head"><h1>Add to portfolio</h1></div>
+
+<div class="add-wrap">
+  <div class="tabs">
+    <button type="button" class="tab active">My Applications</button>
+    <button type="button" class="tab" onclick="alert('Outbound Oppositions — coming soon.')">Outbound Oppositions</button>
+  </div>
+
+  {% if error %}
+  <div class="banner error">{{ error }}</div>
+  {% endif %}
+
+  {% if added or skipped or invalid %}
+  <div class="banner success">
+    {% if added %}Added {{ added|length }} trademark(s) — now queued for automatic fetch.{% endif %}
+    {% if skipped %} {{ skipped|length }} already tracked, skipped.{% endif %}
+    {% if invalid %} {{ invalid|length }} number(s) invalid and skipped: {{ invalid|join(', ') }}.{% endif %}
+  </div>
+  {% endif %}
+
+  <p class="hint">Paste application numbers your team owns or manages. Paste from Excel, CSV, comma-separated text, or one per line — we'll fetch status, class and owner details from the Registry automatically.</p>
+
+  <form method="post" action="{{ url_for('add_submit') }}">
+    <div class="form-row">
+      <label for="app-no">Single application number</label>
+      <input type="text" id="app-no" name="app_no" placeholder="e.g. 1234567" inputmode="numeric" autofocus>
+    </div>
+    <div class="form-row">
+      <label for="app-nos-bulk">Bulk add</label>
+      <textarea id="app-nos-bulk" name="app_nos_bulk" placeholder="7936098&#10;7931056&#10;7918928"></textarea>
+    </div>
+    <div class="note-box">
+      <span>ℹ</span>
+      We'll pull current status tonight and check for updates every night after that — no need to add these again.
+    </div>
+    <div class="paste-foot">
+      <button type="reset" class="btn btn-ghost">Clear</button>
+      <button type="submit" class="btn btn-primary">Add applications</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

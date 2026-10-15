@@ -1,0 +1,112 @@
+{
+  "wg-CA-FREE-13": {
+    "usage_seconds": 150.0,
+    "blocked_until": 0.0,
+    "last_connected_at": 1791286038.4720864
+  },
+  "wg-CA-FREE-30": {
+    "usage_seconds": 60.0,
+    "blocked_until": 0.0,
+    "last_connected_at": 1791289514.772699
+  },
+  "wg-CA-FREE-31": {
+    "usage_seconds": 210.0,
+    "blocked_until": 0.0,
+    "last_connected_at": 1791290463.2994857
+  },
+  "wg-CA-FREE-32": {
+    "usage_seconds": 60.0,
+    "blocked_until": 0.0,
+    "last_connected_at": 1791291198.9461112
+  },
+  "wg-CA-FREE-33": {
+    "usage_seconds": 960.0,
+    "blocked_until": 0.0,
+    "last_connected_at": 1791376329.253149
+  },
+  "wg-CA-FREE-34": {
+    "usage_seconds": 120.0,
+    "blocked_until": 0.0,
+    "last_connected_at": 1791376939.6403444
+  },
+  "wg-CA-FREE-7": {
+    "usage_seconds": 300.0,
+    "blocked_until": 0.0,
+    "last_connected_at": 1791377029.235008
+  },
+  "wg-CA-FREE-8": {
+    "usage_seconds": 270.0,
+    "blocked_until": 0.0,
+    "last_connected_at": 1791377161.8984869
+  },
+  "wg-JP-FREE-18": {
+    "usage_seconds": 840.0,
+    "blocked_until": 0.0,
+    "last_connected_at": 1791377345.698727
+  },
+  "wg-JP-FREE-19": {
+    "usage_seconds": 30.0,
+    "blocked_until": 0.0,
+    "last_connected_at": 1791377664.3024542
+  },
+  "wg-JP-FREE-26": {
+    "usage_seconds": 540.0,
+    "blocked_until": 0.0,
+    "last_connected_at": 1791378130.1021607
+  },
+  "wg-JP-FREE-27": {
+    "usage_seconds": 0.0,
+    "blocked_until": 0.0,
+    "last_connected_at": 1791378862.3982425
+  },
+  "wg-JP-FREE-28": {
+    "usage_seconds": 0.0,
+    "blocked_until": 0.0,
+    "last_connected_at": 0.0
+  },
+  "wg-JP-FREE-29": {
+    "usage_seconds": 0.0,
+    "blocked_until": 0.0,
+    "last_connected_at": 0.0
+  },
+  "wg-JP-FREE-30": {
+    "usage_seconds": 0.0,
+    "blocked_until": 0.0,
+    "last_connected_at": 0.0
+  },
+  "wg-JP-FREE-31": {
+    "usage_seconds": 0.0,
+    "blocked_until": 0.0,
+    "last_connected_at": 0.0
+  },
+  "wg-MX-FREE-12": {
+    "usage_seconds": 0.0,
+    "blocked_until": 0.0,
+    "last_connected_at": 0.0
+  },
+  "wg-MX-FREE-15": {
+    "usage_seconds": 0.0,
+    "blocked_until": 0.0,
+    "last_connected_at": 0.0
+  },
+  "wg-MX-FREE-16": {
+    "usage_seconds": 0.0,
+    "blocked_until": 0.0,
+    "last_connected_at": 0.0
+  },
+  "wg-MX-FREE-4": {
+    "usage_seconds": 0.0,
+    "blocked_until": 0.0,
+    "last_connected_at": 0.0
+  },
+  "wg-NL-FREE-2": {
+    "usage_seconds": 30.0,
+    "blocked_until": 0.0,
+    "last_connected_at": 1791002870.99865
+  },
+  "wg-pilot-ca13": {
+    "usage_seconds": 0.0,
+    "blocked_until": 0.0,
+    "last_connected_at": 1791281102.8168273
+  }
+}

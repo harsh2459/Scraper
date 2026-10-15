@@ -1,0 +1,31 @@
+<svg width="1360" height="360" viewBox="0 0 1360 360" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="TM Tracker logo">
+  <defs>
+    <linearGradient id="tile" x1="30" y1="30" x2="330" y2="330" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1B2C57"/>
+      <stop offset="1" stop-color="#111C3B"/>
+    </linearGradient>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap');
+      .wm { font-family: 'Space Grotesk', 'Segoe UI', Arial, sans-serif; }
+    </style>
+  </defs>
+
+  <!-- Icon -->
+  <g transform="translate(30,30) scale(0.5859)">
+    <rect width="512" height="512" rx="116" fill="url(#tile)"/>
+    <circle cx="256" cy="256" r="150" fill="none" stroke="#FFFFFF" stroke-opacity="0.13" stroke-width="30"/>
+    <path d="M 256 106 A 150 150 0 1 1 150 150" fill="none" stroke="#F6A21E" stroke-width="30" stroke-linecap="round"/>
+    <circle cx="150" cy="150" r="30" fill="#F6A21E"/>
+    <circle cx="150" cy="150" r="11" fill="#152449"/>
+    <path d="M198 260 L240 302 L322 206" fill="none" stroke="#FFFFFF" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="388" y="228" class="wm" font-size="140" letter-spacing="-3">
+    <tspan font-weight="700" fill="#152449">TM</tspan><tspan font-weight="500" fill="#152449"> Tracker</tspan>
+  </text>
+  <text x="388" y="118" class="wm" font-size="42" font-weight="700" fill="#F6A21E">&#8482;</text>
+
+  <!-- Tagline -->
+  <text x="392" y="290" class="wm" font-size="37" font-weight="500" letter-spacing="7" fill="#5A6683">NEVER MISS A RENEWAL</text>
+</svg>

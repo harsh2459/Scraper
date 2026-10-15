@@ -1,0 +1,85 @@
+# Linux/Contabo only. No production cutover or database creation is implicit.
+name: tmtracker-staging
+x-runtime: &runtime
+  image: tmtracker-staging:${RELEASE_TAG:-schema-rehearsal}
+  build:
+    context: ../..
+    dockerfile: deploy/containers/Dockerfile
+  network_mode: host
+  user: "${TMTRACKER_UID:?Set the existing tmtracker UID}:${TMTRACKER_GID:?Set the existing tmtracker GID}"
+  read_only: true
+  tmpfs:
+    - /tmp:size=256m,mode=1777
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  logging:
+    driver: json-file
+    options: {max-size: "10m", max-file: "3"}
+services:
+  migrate:
+    <<: *runtime
+    profiles: [migration]
+    env_file:
+      - path: "${STAGING_MIGRATION_ENV:-/etc/tmtracker/staging-migration.env}"
+        format: raw
+    command: [migrate]
+  control:
+    <<: *runtime
+    env_file:
+      - path: "${STAGING_CONTROL_ENV:-/etc/tmtracker/staging-control.env}"
+        format: raw
+    environment:
+      CONTROL_ENV: production
+      CONTROL_PORT: "5510"
+      CONTROL_ARTIFACT_DIR: /var/lib/tmtracker/staging/fleet-artifacts
+    command: [control]
+    volumes:
+      - type: bind
+        source: /var/lib/tmtracker/staging/fleet-artifacts
+        target: /var/lib/tmtracker/staging/fleet-artifacts
+        bind: {create_host_path: false}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5510/api/control/v1/health',timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+  user:
+    <<: *runtime
+    env_file:
+      - path: "${STAGING_USER_ENV:-/etc/tmtracker/staging-user.env}"
+        format: raw
+    environment:
+      TM_ENV: production
+      TM_LOAD_LEGACY_ENV: "0"
+      TM_FLEET_CONTROL_ENABLED: "1"
+      TM_AUTO_MIGRATE: "0"
+      TM_BACKGROUND_TASKS_ENABLED: "0"
+      TM_BIND_HOST: 127.0.0.1
+      TM_MANAGER_PORT: "5505"
+      CONTROL_ARTIFACT_DIR: /var/lib/tmtracker/staging/fleet-artifacts
+      USE_WAITRESS: "1"
+    command: [user]
+    volumes:
+      - type: bind
+        source: /opt/tmtracker/data
+        target: /opt/tmtracker/data
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: /opt/tmtracker/tm_manager/Journal
+        target: /opt/tmtracker/tm_manager/Journal
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: /var/lib/tmtracker/staging/fleet-artifacts
+        target: /var/lib/tmtracker/staging/fleet-artifacts
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: /var/lib/tmtracker/staging/logo-cache
+        target: /opt/tmtracker/tm_manager/_logo_cache
+        bind: {create_host_path: false}
+      - type: bind
+        source: /var/lib/tmtracker/staging/journal-logo-cache
+        target: /opt/tmtracker/tm_manager/_journal_logo_cache
+        bind: {create_host_path: false}

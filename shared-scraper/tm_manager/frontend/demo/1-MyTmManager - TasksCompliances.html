@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>
+        window.FontAwesomeConfig = {
+          autoReplaceSvg: 'nest'
+        };
+      </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasks & Compliances — MyTmManager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Inter"', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#eef2ff', 100: '#e0e7ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' },
+                        ink: { 900: '#1d2939', 700: '#3f4a5b', 500: '#667085', 400: '#98a2b3' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-[#f8f9fa] text-ink-900 antialiased h-screen flex flex-col overflow-hidden font-sans">
+
+    <!-- Top Bar -->
+    <header class="h-16 bg-white border-b border-[#e4e7ec] flex items-center justify-between px-6 shrink-0 z-20 relative">
+        <div class="flex items-center gap-2 w-60">
+            <div class="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
+                <i class="ph-bold ph-shield-check text-white text-lg"></i>
+            </div>
+            <span class="font-bold text-lg tracking-tight text-ink-900">MyTmManager</span>
+        </div>
+
+        <div class="flex-1 max-w-xl mx-auto hidden md:flex items-center">
+            <div class="relative w-full">
+                <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 text-base"></i>
+                <input type="text" placeholder="Search tasks..." class="w-full pl-9 pr-4 py-2 text-sm bg-[#f4f5f7] border-none rounded-md focus:ring-2 focus:ring-brand-500 outline-none placeholder-ink-400 text-ink-700">
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <button class="w-9 h-9 flex items-center justify-center rounded-md text-ink-500 hover:bg-[#f4f5f7] transition-colors relative">
+                <i class="ph ph-bell text-lg"></i>
+                <span class="absolute top-2 right-2.5 w-2 h-2 bg-amber-500 border border-white rounded-full"></span>
+            </button>
+            <div class="flex items-center gap-3 pl-4 border-l border-[#e4e7ec] cursor-pointer">
+                <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-4.jpg" alt="Sarah" class="w-8 h-8 rounded-full object-cover">
+                <i class="ph ph-caret-down text-xs text-ink-400"></i>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-[240px] bg-white border-r border-[#e4e7ec] flex flex-col shrink-0 overflow-hidden z-10">
+            <div class="flex-1 overflow-y-auto">
+                <nav class="py-5 text-sm">
+                    <div class="px-5 mb-2">
+                        <p class="text-[10px] font-bold text-ink-400 tracking-wider uppercase">Workspace</p>
+                    </div>
+                    <ul class="mb-6">
+                        <li>
+                            <a href="Dashboard__desktop.html" class="flex items-center gap-3 px-5 py-2.5 text-ink-500 hover:bg-[#f8f9fa] hover:text-ink-900 transition-colors">
+                                <i class="ph ph-squares-four text-lg"></i> Dashboard
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="px-5 mb-2">
+                        <p class="text-[10px] font-bold text-ink-400 tracking-wider uppercase">My Portfolio</p>
+                    </div>
+                    <ul class="mb-6">
+                        <li>
+                            <a href="Trademarks__desktop.html" class="flex items-center gap-3 px-5 py-2.5 text-ink-500 hover:bg-[#f8f9fa] hover:text-ink-900 transition-colors">
+                                <i class="ph ph-list-bullets text-lg"></i> Trademarks
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="flex items-center gap-3 px-5 py-2.5 text-ink-500 hover:bg-[#f8f9fa] hover:text-ink-900 transition-colors">
+                                <i class="ph ph-plus-circle text-lg"></i> Add Trademarks
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="px-5 mb-2">
+                        <p class="text-[10px] font-bold text-ink-400 tracking-wider uppercase">Monitoring & Watch</p>
+                    </div>
+                    <ul class="mb-6">
+                        <li>
+                            <a href="TasksCompliances__desktop.html" class="flex items-center justify-between px-5 py-2.5 bg-brand-50 border-r-2 border-brand-600 text-brand-700 font-medium transition-colors">
+                                <div class="flex items-center gap-3"><i class="ph-fill ph-calendar-check text-lg"></i> Tasks & Compliances</div>
+                                <span class="text-[10px] font-bold bg-rose-50 text-rose-600 px-1.5 py-0.5 rounded-full">12</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="px-5 mb-2">
+                        <p class="text-[10px] font-bold text-ink-400 tracking-wider uppercase">All Updates</p>
+                    </div>
+                    <ul class="mb-6">
+                        <li>
+                            <a href="StatusChanges__desktop.html" class="flex items-center gap-3 px-5 py-2.5 text-ink-500 hover:bg-[#f8f9fa] hover:text-ink-900 transition-colors">
+                                <i class="ph ph-arrows-left-right text-lg"></i> Status Changes
+                            </a>
+                        </li>
+                        <li>
+                            <a href="NewDocuments__desktop.html" class="flex items-center justify-between px-5 py-2.5 text-ink-500 hover:bg-[#f8f9fa] hover:text-ink-900 transition-colors">
+                                <div class="flex items-center gap-3"><i class="ph ph-file-text text-lg"></i> New Documents</div>
+                                <span class="text-[10px] font-bold bg-ink-100 text-ink-700 px-1.5 py-0.5 rounded-full">14</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="px-5 mb-2">
+                        <p class="text-[10px] font-bold text-ink-400 tracking-wider uppercase">TM Watch</p>
+                    </div>
+                    <ul class="mb-6">
+                        <li>
+                            <a href="JournalWatch__desktop.html" class="flex items-center justify-between px-5 py-2.5 text-ink-500 hover:bg-[#f8f9fa] hover:text-ink-900 transition-colors">
+                                <div class="flex items-center gap-3"><i class="ph ph-newspaper text-lg"></i> Journal Watch</div>
+                                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            
+            <div class="p-4 border-t border-[#e4e7ec] bg-[#fcfcfd]">
+                <div class="flex items-center gap-3">
+                    <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-4.jpg" alt="Sarah Jenkins" class="w-9 h-9 rounded-full object-cover border border-[#e4e7ec]">
+                    <div class="min-w-0">
+                        <p class="text-xs font-semibold text-ink-900 truncate">Sarah Jenkins</p>
+                        <p class="text-[10px] text-ink-400 truncate">sarah@mycompany.com</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col min-w-0 bg-[#f8f9fa]">
+            <div class="px-6 py-4 bg-white border-b border-[#e4e7ec] flex items-center justify-between">
+                <div>
+                    <h1 class="text-lg font-bold text-ink-900">Tasks & Compliances</h1>
+                    <p class="text-xs text-ink-500">Registry reminder logs and upcoming deadlines</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center bg-[#f4f5f7] p-1 rounded-lg">
+                        <button class="px-3 py-1.5 text-xs font-semibold text-brand-700 bg-white rounded-md shadow-sm">Calendar</button>
+                        <button class="px-3 py-1.5 text-xs font-medium text-ink-500 hover:text-ink-700">List View</button>
+                    </div>
+                    <div class="h-6 w-px bg-[#e4e7ec] mx-1"></div>
+                    <button class="px-4 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-700 flex items-center gap-2 shadow-sm">
+                        <i class="ph ph-plus text-lg"></i> Manual Task
+                    </button>
+                </div>
+            </div>
+
+            <!-- Calendar Controls -->
+            <div class="px-6 py-3 bg-white border-b border-[#e4e7ec] flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <h2 class="text-base font-bold text-ink-900">May 2026</h2>
+                    <div class="flex items-center gap-1">
+                        <button class="p-1.5 hover:bg-ink-50 rounded transition-colors border border-[#e4e7ec]"><i class="ph ph-caret-left"></i></button>
+                        <button class="px-3 py-1.5 text-xs font-medium hover:bg-ink-50 rounded transition-colors border border-[#e4e7ec]">Today</button>
+                        <button class="p-1.5 hover:bg-ink-50 rounded transition-colors border border-[#e4e7ec]"><i class="ph ph-caret-right"></i></button>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-2.5 h-2.5 rounded-full bg-rose-500"></div>
+                        <span class="text-[11px] font-medium text-ink-500">Registry Reminder</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
+                        <span class="text-[11px] font-medium text-ink-500">Office Action</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-2.5 h-2.5 rounded-full bg-brand-500"></div>
+                        <span class="text-[11px] font-medium text-ink-500">Internal Task</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar Note -->
+            <div class="px-6 py-2 bg-indigo-50 border-b border-indigo-100 flex items-center gap-3">
+                <i class="ph ph-info text-indigo-500"></i>
+                <p class="text-[11px] text-indigo-700 font-medium">
+                    This view displays a historical log of registry-issued reminders and compliance notices. For predictive planning, please use the Portfolio Forecast tool.
+                </p>
+            </div>
+
+            <!-- Calendar Grid -->
+            <div class="flex-1 overflow-auto bg-white p-6">
+                <div class="grid grid-cols-7 border-t border-l border-[#e4e7ec]">
+                    <!-- Week Headers -->
+                    <div class="px-3 py-2 text-[10px] font-bold text-ink-400 uppercase tracking-widest text-center border-r border-b border-[#e4e7ec] bg-[#fcfcfd]">Mon</div>
+                    <div class="px-3 py-2 text-[10px] font-bold text-ink-400 uppercase tracking-widest text-center border-r border-b border-[#e4e7ec] bg-[#fcfcfd]">Tue</div>
+                    <div class="px-3 py-2 text-[10px] font-bold text-ink-400 uppercase tracking-widest text-center border-r border-b border-[#e4e7ec] bg-[#fcfcfd]">Wed</div>
+                    <div class="px-3 py-2 text-[10px] font-bold text-ink-400 uppercase tracking-widest text-center border-r border-b border-[#e4e7ec] bg-[#fcfcfd]">Thu</div>
+                    <div class="px-3 py-2 text-[10px] font-bold text-ink-400 uppercase tracking-widest text-center border-r border-b border-[#e4e7ec] bg-[#fcfcfd]">Fri</div>
+                    <div class="px-3 py-2 text-[10px] font-bold text-ink-400 uppercase tracking-widest text-center border-r border-b border-[#e4e7ec] bg-[#fcfcfd] text-rose-400">Sat</div>
+                    <div class="px-3 py-2 text-[10px] font-bold text-ink-400 uppercase tracking-widest text-center border-r border-b border-[#e4e7ec] bg-[#fcfcfd] text-rose-400">Sun</div>
+
+                    <!-- Row 1 -->
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec] bg-[#f8f9fa] text-ink-300">27</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec] bg-[#f8f9fa] text-ink-300">28</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec] bg-[#f8f9fa] text-ink-300">29</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec] bg-[#f8f9fa] text-ink-300">30</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">1</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">2</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">3</div>
+
+                    <!-- Row 2 -->
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">4</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">5</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">
+                        <span class="text-xs font-bold text-ink-900 mb-2 block">6</span>
+                        <div class="bg-rose-50 border border-rose-100 p-1.5 rounded mb-1 cursor-pointer hover:bg-rose-100 transition-colors">
+                            <p class="text-[9px] font-bold text-rose-700 truncate uppercase">Northwind Retail</p>
+                            <p class="text-[10px] text-rose-600">Renewal Notice</p>
+                        </div>
+                    </div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">7</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">8</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">9</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">10</div>
+
+                    <!-- Row 3 -->
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">11</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">12</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">13</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec] bg-brand-50/20">
+                        <span class="text-xs font-bold text-ink-900 mb-2 block text-brand-600 underline">14</span>
+                        <div class="bg-amber-50 border border-amber-100 p-1.5 rounded mb-1 cursor-pointer hover:bg-amber-100 transition-colors">
+                            <p class="text-[9px] font-bold text-amber-700 truncate uppercase">SwiftPay App</p>
+                            <p class="text-[10px] text-amber-600">OA Response</p>
+                        </div>
+                        <div class="bg-brand-50 border border-brand-100 p-1.5 rounded mb-1 cursor-pointer hover:bg-brand-100 transition-colors">
+                            <p class="text-[9px] font-bold text-brand-700 truncate uppercase">SecureVault</p>
+                            <p class="text-[10px] text-brand-600">Document Review</p>
+                        </div>
+                    </div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">15</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">16</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">17</div>
+
+                    <!-- Row 4 -->
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">18</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">19</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">20</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">21</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">22</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">23</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">24</div>
+
+                    <!-- Row 5 -->
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">25</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">26</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">27</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">
+                        <span class="text-xs font-bold text-ink-900 mb-2 block">28</span>
+                        <div class="bg-rose-50 border border-rose-100 p-1.5 rounded mb-1 cursor-pointer hover:bg-rose-100 transition-colors">
+                            <p class="text-[9px] font-bold text-rose-700 truncate uppercase">Northwind Retail</p>
+                            <p class="text-[10px] text-rose-600">Renewal Deadline</p>
+                        </div>
+                    </div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">29</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">30</div>
+                    <div class="min-h-[120px] p-2 border-r border-b border-[#e4e7ec]">31</div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

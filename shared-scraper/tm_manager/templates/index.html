@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+{% block title %}Trademarks — {% endblock %}
+{% block content_class %}no-pad{% endblock %}
+
+{% block extra_css %}
+/* ===== Toolbar ===== */
+.ptb{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 12px;border-bottom:1px solid var(--border);background:var(--panel);
+  flex-shrink:0;flex-wrap:wrap;
+}
+.ptb-title{
+  display:flex;align-items:center;gap:6px;font-weight:600;font-size:13px;
+  white-space:nowrap;padding-right:10px;border-right:1px solid var(--border);margin-right:2px;
+}
+.ptb-title svg{width:14px;height:14px;opacity:0.55;}
+.search-combo{
+  display:flex;align-items:center;border:1px solid var(--border2);border-radius:5px;
+  overflow:hidden;background:var(--panel);height:30px;
+}
+.search-type{
+  display:flex;align-items:center;gap:4px;padding:0 9px;
+  border-right:1px solid var(--border2);font-size:12px;color:var(--muted-fg);
+  cursor:pointer;white-space:nowrap;height:100%;background:var(--muted2);
+}
+.search-type svg{width:10px;height:10px;}
+.search-combo input{
+  border:none;flex:1;font-size:12.5px;padding:0 9px;outline:none;
+  font-family:inherit;color:var(--fg);background:var(--panel);
+  min-width:160px;max-width:240px;height:100%;
+}
+.btn-tag-sm{
+  display:inline-flex;align-items:center;gap:4px;
+  border:1px solid var(--border2);border-radius:5px;padding:4px 10px;
+  font-size:12px;font-weight:500;background:var(--panel);color:var(--fg);
+  height:30px;white-space:nowrap;
+}
+.btn-tag-sm svg{width:12px;height:12px;flex-shrink:0;}
+.ptb-sep{flex:1;}
+.filter-select{
+  border:1px solid var(--border2);border-radius:5px;padding:4px 8px;
+  font-size:12px;font-family:inherit;outline:none;color:var(--fg);
+  background:var(--panel);height:30px;
+}
+.btn-filters{
+  display:inline-flex;align-items:center;gap:5px;
+  border:1px solid var(--border2);border-radius:5px;padding:4px 10px;
+  font-size:12px;font-weight:500;background:var(--panel);color:var(--fg);height:30px;
+}
+.btn-filters svg{width:12px;height:12px;}
+
+/* ===== Split layout ===== */
+.split{display:flex;flex:1;min-height:0;overflow:hidden;}
+.list-pane{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
+.detail-pane{
+  width:0;flex-shrink:0;overflow:hidden;
+  border-left:1px solid var(--border);background:var(--panel);
+  transition:width 0.18s ease;display:flex;flex-direction:column;min-height:0;
+}
+.detail-pane.open{width:560px;max-width:56vw;}
+.detail-loading{padding:40px 20px;color:var(--muted-fg);font-size:13px;text-align:center;}
+
+/* ===== Table ===== */
+.table-wrap{flex:1;overflow:auto;background:var(--panel);}
+table.tm-table{width:100%;min-width:780px;border-collapse:collapse;}
+table.tm-table thead th{
+  text-align:left;font-size:11.5px;font-weight:500;color:var(--muted-fg);
+  padding:8px 10px;background:var(--panel);border-bottom:1px solid var(--border);
+  white-space:nowrap;position:sticky;top:0;z-index:1;
+}
+table.tm-table thead th:first-child{width:36px;padding-left:12px;}
+table.tm-table thead th input[type=checkbox]{accent-color:var(--primary);}
+table.tm-table tbody td{
+  padding:9px 10px;border-bottom:1px solid var(--border);
+  vertical-align:middle;font-size:12.5px;
+}
+table.tm-table tbody td:first-child{padding-left:12px;}
+table.tm-table tbody tr:last-child td{border-bottom:none;}
+table.tm-table tbody tr.row-link{cursor:pointer;}
+table.tm-table tbody tr.row-link:hover td{background:#F9FAFB;}
+table.tm-table tbody tr.row-link.selected td{background:#EFF6FF;}
+table.tm-table tbody td input[type=checkbox]{accent-color:var(--primary);}
+
+.cell-mark{display:flex;align-items:center;gap:9px;}
+.mark-thumb{
+  width:28px;height:28px;border-radius:4px;
+  background:#1F2937;color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;flex-shrink:0;overflow:hidden;
+}
+.mark-thumb img{width:100%;height:100%;object-fit:contain;background:#fff;}
+.mark-thumb.no-img{background:#E5E7EB;color:#9CA3AF;}
+.mark-name{font-size:12.5px;font-weight:500;color:#111827;}
+.app-no-link{color:#2563EB;font-size:12.5px;font-weight:500;}
+.cls-val{color:#6B7280;font-size:12.5px;}
+.prop-val{font-size:12px;color:#374151;max-width:200px;}
+
+/* ===== Footer ===== */
+.table-foot{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:7px 12px;font-size:12px;color:#6B7280;
+  border-top:1px solid var(--border);background:var(--panel);flex-shrink:0;flex-wrap:wrap;gap:6px;
+}
+.pager{display:flex;align-items:center;gap:7px;}
+.pager select{
+  border:1px solid var(--border2);border-radius:4px;padding:3px 6px;
+  font-size:12px;color:var(--fg);background:var(--panel);outline:none;font-family:inherit;
+}
+.pg-btn{
+  border:1px solid var(--border2);background:var(--panel);border-radius:4px;
+  width:24px;height:24px;display:flex;align-items:center;justify-content:center;
+  font-size:12px;color:var(--fg);text-decoration:none;
+}
+.pg-btn:hover:not(.dis){background:var(--muted);}
+.pg-btn.dis{opacity:0.35;pointer-events:none;}
+
+@media (max-width:900px){
+  .detail-pane.open{width:100vw;max-width:100vw;position:fixed;inset:0;z-index:50;}
+}
+{% endblock %}
+
+{% block topbar %}
+<div class="ptb">
+  <div class="ptb-title">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12v2H2zm0 4h12v2H2zm0 4h8v2H2z"/></svg>
+    Portfolio Trademarks
+  </div>
+
+  <form method="get" action="{{ url_for('trademarks_list') }}" style="display:contents;">
+    <div class="search-combo">
+      <span class="search-type">
+        Word Mark
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg>
+      </span>
+      <input type="text" name="q" value="{{ q }}" placeholder="Search...">
+    </div>
+    <input type="hidden" name="status" value="{{ status_filter }}">
+    <input type="hidden" name="class" value="{{ class_filter }}">
+  </form>
+
+  <button class="btn-tag-sm" type="button">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 2h5l7 7-5 5-7-7V2z"/><circle cx="5" cy="5" r="1" fill="currentColor" stroke="none"/></svg>
+    Tags
+  </button>
+
+  <div class="ptb-sep"></div>
+
+  <select class="filter-select" onchange="window.location='/trademarks?q={{ q|urlencode }}&status={{ status_filter|urlencode }}&class='+this.value">
+    <option value="">All classes</option>
+    {% for c in available_classes %}
+    <option value="{{ c }}" {{ 'selected' if c|string == class_filter|string }}>Class {{ c }}</option>
+    {% endfor %}
+  </select>
+
+  <select class="filter-select" onchange="window.location='/trademarks?q={{ q|urlencode }}&class={{ class_filter|urlencode }}&status='+encodeURIComponent(this.value)">
+    <option value="">All statuses</option>
+    {% for s in available_statuses %}
+    <option value="{{ s }}" {{ 'selected' if s == status_filter }}>{{ s }}</option>
+    {% endfor %}
+  </select>
+
+  <button class="btn-filters" type="button">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M4 8h8M6 12h4"/></svg>
+    Filters
+  </button>
+
+  <a class="btn btn-primary" href="{{ url_for('add_form') }}" style="height:30px;display:inline-flex;align-items:center;">+ Add applications</a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="split">
+  <div class="list-pane" id="listPane">
+    <div class="table-wrap">
+      <table class="tm-table">
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="selectAll"></th>
+            <th>App. Num</th>
+            <th>Word Mark</th>
+            <th>Class</th>
+            <th>App. Date</th>
+            <th>Status</th>
+            <th>Proprietor</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for tm in trademarks %}
+          <tr class="row-link" id="row-{{ tm.id }}" onclick="openDetail({{ tm.id }}, '{{ url_for('trademark_detail', id_=tm.id) }}')">
+            <td onclick="event.stopPropagation()"><input type="checkbox" class="row-cb" onchange="updateCount()"></td>
+            <td><a class="app-no-link" href="{{ url_for('trademark_detail', id_=tm.id) }}" onclick="event.preventDefault()">{{ tm.app_no }}</a></td>
+            <td>
+              <div class="cell-mark">
+                {% if tm.has_logo %}
+                <div class="mark-thumb"><img src="{{ url_for('trademark_logo', id_=tm.id) }}" alt="" loading="lazy" onerror="this.parentElement.textContent='{{ (tm.word_mark or tm.label or tm.app_no)[:1]|upper }}'"></div>
+                {% else %}
+                <div class="mark-thumb no-img">{{ (tm.word_mark or tm.label or tm.app_no)[:1]|upper }}</div>
+                {% endif %}
+                <span class="mark-name">{{ tm.word_mark or tm.label or '—' }}</span>
+              </div>
+            </td>
+            <td class="cls-val">{{ tm.class_number or '—' }}</td>
+            <td class="cls-val">{{ tm.application_date or '—' }}</td>
+            <td>
+              {% if tm.portal_status %}
+              <span class="pill {{ tm.portal_status|status_class }}"><span class="dot"></span>{{ tm.portal_status }}</span>
+              {% elif tm.status == 'error' %}
+              <span class="pill s-bad"><span class="dot"></span>Fetch failed</span>
+              {% elif tm.status == 'fetching' %}
+              <span class="pill s-default"><span class="dot"></span>Fetching…</span>
+              {% else %}
+              <span class="pill s-default"><span class="dot"></span>Pending</span>
+              {% endif %}
+            </td>
+            <td class="prop-val">{{ tm.proprietor_name or '—' }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="7" style="text-align:center;padding:50px;color:#9CA3AF;font-size:13px;">
+              No trademarks found.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-foot">
+      <span id="selCount">0 of {{ total_filtered }} row(s) selected.</span>
+      <div class="pager">
+        <span>Rows per page</span>
+        <select onchange="window.location='/trademarks?q={{ q|urlencode }}&status={{ status_filter|urlencode }}&class={{ class_filter|urlencode }}&page=1&rows='+this.value">
+          <option value="50" {{ 'selected' if rows_per_page==50 }}>50</option>
+          <option value="100" {{ 'selected' if rows_per_page==100 }}>100</option>
+          <option value="200" {{ 'selected' if rows_per_page==200 }}>200</option>
+        </select>
+        <span>Page {{ page }} of {{ total_pages }}</span>
+        <a class="pg-btn {{ 'dis' if page <= 1 }}" href="/trademarks?q={{ q|urlencode }}&status={{ status_filter|urlencode }}&class={{ class_filter|urlencode }}&page=1">«</a>
+        <a class="pg-btn {{ 'dis' if page <= 1 }}" href="/trademarks?q={{ q|urlencode }}&status={{ status_filter|urlencode }}&class={{ class_filter|urlencode }}&page={{ page - 1 }}">‹</a>
+        <a class="pg-btn {{ 'dis' if page >= total_pages }}" href="/trademarks?q={{ q|urlencode }}&status={{ status_filter|urlencode }}&class={{ class_filter|urlencode }}&page={{ page + 1 }}">›</a>
+        <a class="pg-btn {{ 'dis' if page >= total_pages }}" href="/trademarks?q={{ q|urlencode }}&status={{ status_filter|urlencode }}&class={{ class_filter|urlencode }}&page={{ total_pages }}">»</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-pane" id="detailPane"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const TOTAL = {{ total_filtered }};
+
+  function updateCount() {
+    const sel = document.querySelectorAll('.row-cb:checked').length;
+    document.getElementById('selCount').textContent = sel + ' of ' + TOTAL + ' row(s) selected.';
+  }
+
+  document.getElementById('selectAll').addEventListener('change', function() {
+    document.querySelectorAll('.row-cb').forEach(cb => cb.checked = this.checked);
+    updateCount();
+  });
+
+  let activeRowId = null;
+
+  function openDetail(rowId, url) {
+    if (activeRowId !== null) {
+      const prev = document.getElementById('row-' + activeRowId);
+      if (prev) prev.classList.remove('selected');
+    }
+    activeRowId = rowId;
+    const row = document.getElementById('row-' + rowId);
+    if (row) row.classList.add('selected');
+
+    const pane = document.getElementById('detailPane');
+    pane.classList.add('open');
+    pane.innerHTML = '<div class="detail-loading">Loading…</div>';
+
+    fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(res => res.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const body = doc.querySelector('#detailBody');
+        if (body) {
+          pane.innerHTML = '';
+          pane.appendChild(body);
+        } else {
+          pane.innerHTML = '<div class="detail-loading">Could not load details.</div>';
+        }
+      })
+      .catch(() => {
+        pane.innerHTML = '<div class="detail-loading">Network error.</div>';
+      });
+  }
+
+  function closeDetail() {
+    document.getElementById('detailPane').classList.remove('open');
+    document.getElementById('detailPane').innerHTML = '';
+    if (activeRowId !== null) {
+      const prev = document.getElementById('row-' + activeRowId);
+      if (prev) prev.classList.remove('selected');
+      activeRowId = null;
+    }
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetail(); });
+</script>
+{% endblock %}

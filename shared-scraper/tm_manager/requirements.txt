@@ -1,0 +1,15 @@
+flask>=3.0
+psycopg[binary]>=3.2
+psycopg_pool>=3.2
+certifi>=2024.0
+requests>=2.31
+flask-cors>=4.0
+pdfplumber>=0.11
+Pillow>=10.0
+numpy>=1.26
+waitress>=3.0
+google-auth>=2.35
+google-api-python-client>=2.150
+openpyxl>=3.1
+flask-limiter>=3.5
+sentry-sdk[flask]>=2.0

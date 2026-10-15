@@ -1,0 +1,118 @@
+@import "tailwindcss";
+@source "./";
+
+@theme {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Space Grotesk', 'Inter', -apple-system, sans-serif;
+  --font-mono: 'Space Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  --color-background: #F7F8FB;
+  --color-foreground: #0C1530;
+  --color-panel: #FFFFFF;
+  --color-muted: #EEF1F7;
+  --color-muted-foreground: #5A6683;
+  --color-border: #E4E8F1;
+  --color-border-strong: #D3DAE8;
+
+  --color-sidebar: #152449;
+  --color-sidebar-foreground: #C7D2EA;
+  --color-sidebar-hover: #1F3363;
+  --color-sidebar-active: #26407A;
+
+  --color-primary: #152449;
+  --color-primary-foreground: #FFFFFF;
+  --color-accent: #F6A21E;
+  --color-accent-foreground: #1A1200;
+
+  /* Functional status — 4 buckets */
+  --color-status-good: #10B981;
+  --color-status-good-bg: #10B9811A;
+  --color-status-warn: #F6A21E;
+  --color-status-warn-bg: #F6A21E1A;
+  --color-status-bad: #E5484D;
+  --color-status-bad-bg: #E5484D1A;
+  --color-status-info: #5A6683;
+  --color-status-info-bg: #5A66831A;
+  --color-status-purple: #7C3AED;
+  --color-status-purple-bg: #7C3AED1A;
+
+  --radius-DEFAULT: 12px;
+}
+
+@layer base {
+  html, body, #root { height: 100%; }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  h1, h2, h3, h4 { @apply font-semibold tracking-tight; font-family: var(--font-display); }
+  a { color: inherit; text-decoration: none; }
+  button { font-family: inherit; cursor: pointer; }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-border-strong rounded-md; }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium border border-border-strong bg-panel text-foreground whitespace-nowrap;
+  }
+  .btn:hover { @apply bg-muted; }
+  .btn-primary {
+    @apply bg-primary text-primary-foreground border-primary;
+  }
+  .btn-primary:hover { background-color: #0F1B39; }
+  .btn-accent {
+    @apply bg-accent text-accent-foreground border-accent font-semibold;
+  }
+  .btn-accent:hover { background-color: #E5941A; }
+  .btn-ghost {
+    @apply border-transparent bg-transparent text-muted-foreground;
+  }
+  .btn-ghost:hover { @apply bg-muted; }
+
+  .eyebrow {
+    @apply font-mono text-[11px] uppercase text-accent;
+    letter-spacing: 0.2em;
+  }
+
+  .pill {
+    @apply inline-flex items-center gap-1.5 text-[12.5px] font-normal px-2 py-0.5 rounded-full whitespace-nowrap;
+  }
+  .pill .dot { @apply w-1.5 h-1.5 rounded-full; background: currentColor; flex-shrink: 0; }
+  .pill.s-good { @apply bg-status-good-bg text-status-good; }
+  .pill.s-warn { @apply bg-status-warn-bg text-status-warn; }
+  .pill.s-bad { @apply bg-status-bad-bg text-status-bad; }
+  .pill.s-info,
+  .pill.s-purple,
+  .pill.s-default { @apply bg-status-info-bg text-status-info; }
+
+  .app-no-link {
+    @apply text-primary font-mono text-[12.5px] rounded px-1 py-px;
+    background: rgba(21, 36, 73, 0.06);
+  }
+
+  .card {
+    @apply bg-panel border border-border rounded-[var(--radius-DEFAULT)] px-4 py-3.5 mb-3.5;
+  }
+  .card-head { @apply flex justify-between items-center mb-3 gap-2 flex-wrap; }
+  .card-head h3 { @apply text-[14px] font-semibold m-0 flex items-center gap-2; }
+
+  .table-panel { @apply bg-panel border border-border rounded-[var(--radius-DEFAULT)] overflow-hidden; }
+
+  .loading { @apply p-10 flex flex-col items-center justify-center gap-3 text-center text-muted-foreground text-[13px]; }
+}
+
+/* Printing an invoice: the app shell (`.flex.h-screen.overflow-hidden` in
+   App.tsx, and each page's own scrollable panel) clips anything past one
+   viewport-height, so a multi-page invoice would get cut off after page 1
+   without this — printing needs every ancestor to size to its content
+   instead of the screen viewport. */
+@media print {
+  html, body, #root { height: auto !important; overflow: visible !important; }
+  #root > div, main { display: block !important; height: auto !important; overflow: visible !important; }
+  .print\:hidden { display: none !important; }
+}
+
+.btn:disabled { opacity: .5; cursor: not-allowed; }

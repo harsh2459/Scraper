@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>
+        window.FontAwesomeConfig = {
+          autoReplaceSvg: 'nest'
+        };
+      </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyTmManager — Trademark Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Inter"', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#eef2ff', 100: '#e0e7ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' },
+                        ink: { 900: '#1d2939', 700: '#3f4a5b', 500: '#667085', 400: '#98a2b3' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .apexcharts-tooltip { border: 1px solid #e4e7ec !important; box-shadow: 0 4px 12px rgba(30,41,59,.08) !important; border-radius: 8px !important; font-family: "Inter", sans-serif !important; }
+        .apexcharts-tooltip-title { background: #fff !important; border-bottom: 1px solid #e4e7ec !important; font-weight: 600 !important; }
+    </style>
+</head>
+<body class="bg-[#f8f9fa] text-ink-900 antialiased h-screen flex flex-col overflow-hidden font-sans">
+
+    <!-- Full-width Top Bar spanning both regions -->
+    <header class="h-16 bg-white border-b border-[#e4e7ec] flex items-center justify-between px-6 shrink-0 z-20 relative">
+        <div class="flex items-center gap-2 w-60">
+            <div class="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
+                <i class="ph-bold ph-shield-check text-white text-lg"></i>
+            </div>
+            <span class="font-bold text-lg tracking-tight text-ink-900">MyTmManager</span>
+        </div>
+
+        <div class="flex-1 max-w-xl mx-auto hidden md:flex items-center">
+            <div class="relative w-full">
+                <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 text-base"></i>
+                <input type="text" placeholder="Search marks, classes, or jurisdictions..." class="w-full pl-9 pr-4 py-2 text-sm bg-[#f4f5f7] border-none rounded-md focus:ring-2 focus:ring-brand-500 outline-none placeholder-ink-400 text-ink-700">
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <button class="w-9 h-9 flex items-center justify-center rounded-md text-ink-500 hover:bg-[#f4f5f7] hover:text-ink-900 transition-colors relative">
+                <i class="ph ph-bell text-lg"></i>
+                <span class="absolute top-2 right-2.5 w-2 h-2 bg-amber-500 border border-white rounded-full"></span>
+            </button>
+            <div class="flex items-center gap-3 pl-4 border-l border-[#e4e7ec] cursor-pointer">
+                <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-4.jpg" alt="Sarah Jenkins" class="w-8 h-8 rounded-full object-cover">
+                <div class="hidden lg:block text-right">
+                    <p class="text-sm font-semibold text-ink-900 leading-tight">Good morning, Sarah</p>
+                    <p class="text-xs text-ink-400">Sarah Jenkins - IP Counsel</p>
+                </div>
+                <i class="ph ph-caret-down text-xs text-ink-400"></i>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Left Sidebar (fixed 240px) -->
+        <aside class="w-[240px] bg-white border-r border-[#e4e7ec] flex flex-col shrink-0 overflow-hidden z-10">
+            <div class="flex-1 overflow-y-auto">
+                <nav class="py-5 text-sm">
+                    <div class="px-5 mb-2">
+                        <p class="text-[10px] font-bold text-ink-400 tracking-wider uppercase">Workspace</p>
+                    </div>
+                    <ul class="mb-6">
+                        <li>
+                            <a href="Dashboard__desktop.html" class="flex items-center gap-3 px-5 py-2.5 bg-brand-50 border-r-2 border-brand-600 text-brand-700 font-medium transition-colors">
+                                <i class="ph-fill ph-squares-four text-lg"></i> Dashboard
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="px-5 mb-2">
+                        <p class="text-[10px] font-bold text-ink-400 tracking-wider uppercase">My Portfolio</p>
+                    </div>
+                    <ul class="mb-6">
+                        <li>
+                            <a href="Trademarks__desktop.html" class="flex items-center gap-3 px-5 py-2 py-2.5 text-ink-500 hover:bg-[#f8f9fa] hover:text-ink-900 transition-colors">
+                                <i class="ph ph-list-bullets text-lg"></i> Trademarks
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="flex items-center gap-3 px-5 py-2.5 text-ink-500 hover:bg-[#f8f9fa] hover:text-ink-900 transition-colors">
+                                <i class="ph ph-plus-circle text-lg"></i> Add Trademarks
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="px-5 mb-2">
+                        <p class="text-[10px] font-bold text-ink-400 tracking-wider uppercase">Monitoring & Watch</p>
+                    </div>
+                    <ul class="mb-6">
+                        <li>
+                            <a href="TasksCompliances__desktop.html" class="flex items-center justify-between px-5 py-2.5 text-ink-500 hover:bg-[#f8f9fa] hover:text-ink-900 transition-colors">
+                                <div class="flex items-center gap-3"><i class="ph ph-calendar-check text-lg"></i> Tasks & Compliances</div>
+                                <span class="text-[10px] font-bold bg-rose-50 text-rose-600 px-1.5 py-0.5 rounded-full">12</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="px-5 mb-2">
+                        <p class="text-[10px] font-bold text-ink-400 tracking-wider uppercase">All Updates</p>
+                    </div>
+                    <ul class="mb-6">
+                        <li>
+                            <a href="StatusChanges__desktop.html" class="flex items-center gap-3 px-5 py-2.5 text-ink-500 hover:bg-[#f8f9fa] hover:text-ink-900 transition-colors">
+                                <i class="ph ph-arrows-left-right text-lg"></i> Status Changes
+                            </a>
+                        </li>
+                        <li>
+                            <a href="NewDocuments__desktop.html" class="flex items-center justify-between px-5 py-2.5 text-ink-500 hover:bg-[#f8f9fa] hover:text-ink-900 transition-colors">
+                                <div class="flex items-center gap-3"><i class="ph ph-file-text text-lg"></i> New Documents</div>
+                                <span class="text-[10px] font-bold bg-ink-100 text-ink-700 px-1.5 py-0.5 rounded-full">14</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="px-5 mb-2">
+                        <p class="text-[10px] font-bold text-ink-400 tracking-wider uppercase">TM Watch</p>
+                    </div>
+                    <ul class="mb-6">
+                        <li>
+                            <a href="JournalWatch__desktop.html" class="flex items-center justify-between px-5 py-2.5 text-ink-500 hover:bg-[#f8f9fa] hover:text-ink-900 transition-colors">
+                                <div class="flex items-center gap-3"><i class="ph ph-newspaper text-lg"></i> Journal Watch</div>
+                                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="flex items-center gap-3 px-5 py-2.5 text-ink-500 hover:bg-[#f8f9fa] hover:text-ink-900 transition-colors">
+                                <i class="ph ph-eye text-lg"></i> Citations
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <div class="p-4 border-t border-[#e4e7ec] bg-[#fcfcfd]">
+                <div class="flex items-center gap-3">
+                    <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-4.jpg" alt="Sarah Jenkins" class="w-9 h-9 rounded-full object-cover border border-[#e4e7ec]">
+                    <div class="min-w-0">
+                        <p class="text-xs font-semibold text-ink-900 truncate">Sarah Jenkins</p>
+                        <p class="text-[10px] text-ink-400 truncate">sarah@mycompany.com</p>
+                    </div>
+                    <button class="ml-auto text-ink-400 hover:text-ink-900">
+                        <i class="ph ph-gear text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Fluid Main Workspace -->
+        <main class="flex-1 overflow-y-auto bg-[#f8f9fa] px-7 py-6">
+
+            <!-- LEAD section: one big full-width card for the chart, then a high-density KPI row beneath it -->
+            <section class="mb-6">
+                <div class="bg-white rounded-lg border border-[#e4e7ec] shadow-sm p-5">
+                    <div class="flex items-center justify-between mb-1">
+                        <div>
+                            <h2 class="text-base font-semibold text-ink-900">Monthly Filing Volume</h2>
+                            <p class="text-xs text-ink-400">Applications vs. registrations across the portfolio · last 12 months</p>
+                        </div>
+                        <button class="inline-flex items-center gap-1.5 text-xs font-medium text-ink-700 bg-white border border-[#e4e7ec] rounded-md px-3 py-1.5 hover:bg-[#f8f9fa] transition-colors">
+                            12 Months <i class="ph ph-caret-down text-ink-400"></i>
+                        </button>
+                    </div>
+                    <div id="chart-filings" class="-ml-1"></div>
+                </div>
+
+                <!-- High-density KPI row (compact, no wasted space) -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-3">
+                    <div class="bg-white rounded-lg border border-[#e4e7ec] shadow-sm p-4">
+                        <p class="text-xs text-ink-500 mb-1.5">Total Trademarks</p>
+                        <div class="flex items-end justify-between">
+                            <span class="text-2xl font-bold text-ink-900">2,842</span>
+                            <span class="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">+4.6%</span>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg border border-[#e4e7ec] shadow-sm p-4">
+                        <p class="text-xs text-ink-500 mb-1.5">Urgent Deadlines</p>
+                        <div class="flex items-end justify-between">
+                            <span class="text-2xl font-bold text-rose-600">7</span>
+                            <span class="text-xs text-ink-400">due within 7 days</span>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg border border-[#e4e7ec] shadow-sm p-4">
+                        <p class="text-xs text-ink-500 mb-1.5">Pending Publications</p>
+                        <div class="flex items-end justify-between">
+                            <span class="text-2xl font-bold text-ink-900">18</span>
+                            <span class="text-xs text-ink-400">6 ending this week</span>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg border border-[#e4e7ec] shadow-sm p-4">
+                        <p class="text-xs text-ink-500 mb-1.5">Daily Snapshot</p>
+                        <div class="flex items-end justify-between">
+                            <span class="text-2xl font-bold text-ink-900">24<span class="text-sm font-normal text-ink-400"> Updates</span></span>
+                            <div class="flex gap-1 text-[10px] text-ink-400">
+                                <span class="bg-ink-50 px-1 py-0.5 rounded">3 opp.</span>
+                                <span class="bg-ink-50 px-1 py-0.5 rounded">9 OA</span>
+                                <span class="bg-ink-50 px-1 py-0.5 rounded">12 gaz.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- First SECTION: Priority Deadlines & Tasks (dense data table) -->
+            <section class="mb-6">
+                <div class="bg-white rounded-lg border border-[#e4e7ec] shadow-sm">
+                    <div class="flex items-center justify-between px-5 py-4 border-b border-[#e4e7ec]">
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-sm font-semibold text-ink-900">Priority Deadlines &amp; Tasks</h3>
+                            <span class="text-[10px] font-bold bg-rose-50 text-rose-600 px-1.5 py-0.5 rounded-full">12 open</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button class="inline-flex items-center gap-1.5 text-xs font-medium text-ink-700 bg-white border border-[#e4e7ec] rounded-md px-3 py-1.5 hover:bg-[#f8f9fa] transition-colors">
+                                <i class="ph ph-funnel text-ink-400"></i> Filter
+                            </button>
+                            <button class="inline-flex items-center gap-1.5 text-xs font-medium text-white bg-brand-600 rounded-md px-3 py-1.5 hover:bg-brand-700 transition-colors">
+                                <i class="ph ph-plus"></i> Add Task
+                            </button>
+                        </div>
+                    </div>
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="text-[11px] font-semibold text-ink-500 uppercase tracking-wide border-b border-[#e4e7ec]">
+                                <th class="px-5 py-2.5 font-semibold">Mark</th>
+                                <th class="px-3 py-2.5 font-semibold">Jurisdiction</th>
+                                <th class="px-3 py-2.5 font-semibold">Class</th>
+                                <th class="px-3 py-2.5 font-semibold">Deadline Type</th>
+                                <th class="px-3 py-2.5 font-semibold">Due Date</th>
+                                <th class="px-3 py-2.5 font-semibold">Status</th>
+                                <th class="px-5 py-2.5 font-semibold"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#eef0f3]">
+                            <tr class="hover:bg-[#fcfcfd] transition-colors">
+                                <td class="px-5 py-3">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-7 h-7 rounded-md bg-rose-50 flex items-center justify-center text-rose-600"><i class="ph-fill ph-storefront text-sm"></i></div>
+                                        <div><p class="font-medium text-ink-900">Northwind Retail</p><p class="text-ink-400">App No. 88/41209</p></div>
+                                    </div>
+                                </td>
+                                <td class="px-3 py-3"><span class="inline-flex items-center gap-1 text-ink-700 font-medium"><span class="w-4 h-4 rounded-full bg-ink-100 flex items-center justify-center text-[9px] font-bold text-ink-600">US</span> United States</span></td>
+                                <td class="px-3 py-3 font-medium text-ink-900">25</td>
+                                <td class="px-3 py-3 text-ink-700">Renewal Fee</td>
+                                <td class="px-3 py-3 font-medium text-rose-600">May 28, 2026</td>
+                                <td class="px-3 py-3"><span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-rose-50 text-rose-700">Urgent</span></td>
+                                <td class="px-5 py-3 text-right"><button class="text-ink-400 hover:text-ink-900"><i class="ph ph-dots-three-vertical"></i></button></td>
+                            </tr>
+                            <tr class="hover:bg-[#fcfcfd] transition-colors">
+                                <td class="px-5 py-3">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-7 h-7 rounded-md bg-indigo-50 flex items-center justify-center text-indigo-600"><i class="ph-fill ph-device-mobile text-sm"></i></div>
+                                        <div><p class="font-medium text-ink-900">SwiftPay App</p><p class="text-ink-400">App No. 018420567</p></div>
+                                    </div>
+                                </td>
+                                <td class="px-3 py-3"><span class="inline-flex items-center gap-1 text-ink-700 font-medium"><span class="w-4 h-4 rounded-full bg-ink-100 flex items-center justify-center text-[9px] font-bold text-ink-600">EU</span> European Union</span></td>
+                                <td class="px-3 py-3 font-medium text-ink-900">36</td>
+                                <td class="px-3 py-3 text-ink-700">Office Action Reply</td>
+                                <td class="px-3 py-3 font-medium text-amber-600">Jun 04, 2026</td>
+                                <td class="px-3 py-3"><span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-700">In Progress</span></td>
+                                <td class="px-5 py-3 text-right"><button class="text-ink-400 hover:text-ink-900"><i class="ph ph-dots-three-vertical"></i></button></td>
+                            </tr>
+                            <tr class="hover:bg-[#fcfcfd] transition-colors">
+                                <td class="px-5 py-3">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-7 h-7 rounded-md bg-emerald-50 flex items-center justify-center text-emerald-600"><i class="ph-fill ph-shield-check text-sm"></i></div>
+                                        <div><p class="font-medium text-ink-900">SecureVault</p><p class="text-ink-400">App No. 302284710</p></div>
+                                    </div>
+                                </td>
+                                <td class="px-3 py-3"><span class="inline-flex items-center gap-1 text-ink-700 font-medium"><span class="w-4 h-4 rounded-full bg-ink-100 flex items-center justify-center text-[9px] font-bold text-ink-600">UK</span> United Kingdom</span></td>
+                                <td class="px-3 py-3 font-medium text-ink-900">9</td>
+                                <td class="px-3 py-3 text-ink-700">Opposition Hearing</td>
+                                <td class="px-3 py-3 font-medium text-ink-700">Jun 12, 2026</td>
+                                <td class="px-3 py-3"><span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">Completed</span></td>
+                                <td class="px-5 py-3 text-right"><button class="text-ink-400 hover:text-ink-900"><i class="ph ph-dots-three-vertical"></i></button></td>
+                            </tr>
+                            <tr class="hover:bg-[#fcfcfd] transition-colors">
+                                <td class="px-5 py-3">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-7 h-7 rounded-md bg-violet-50 flex items-center justify-center text-violet-600"><i class="ph-fill ph-cloud text-sm"></i></div>
+                                        <div><p class="font-medium text-ink-900">CloudBase SaaS</p><p class="text-ink-400">App No. 97654321</p></div>
+                                    </div>
+                                </td>
+                                <td class="px-3 py-3"><span class="inline-flex items-center gap-1 text-ink-700 font-medium"><span class="w-4 h-4 rounded-full bg-ink-100 flex items-center justify-center text-[9px] font-bold text-ink-600">AU</span> Australia</span></td>
+                                <td class="px-3 py-3 font-medium text-ink-900">42</td>
+                                <td class="px-3 py-3 text-ink-700">Declaration of Use</td>
+                                <td class="px-3 py-3 font-medium text-ink-700">Jul 01, 2026</td>
+                                <td class="px-3 py-3"><span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-700">In Progress</span></td>
+                                <td class="px-5 py-3 text-right"><button class="text-ink-400 hover:text-ink-900"><i class="ph ph-dots-three-vertical"></i></button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Final SECTION: full-width detail panel (big compliance figure + action pills + side-by-side tracking grids) -->
+            <section>
+                <div class="bg-white rounded-lg border border-[#e4e7ec] shadow-sm">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-5 py-4 border-b border-[#e4e7ec]">
+                        <div class="flex items-center gap-3">
+                            <div class="text-ink-900">
+                                <p class="text-xs text-ink-400">Portfolio Health</p>
+                                <p class="text-3xl font-bold leading-none">99.4<span class="text-base font-medium text-ink-400">%</span></p>
+                            </div>
+                            <div id="spark-health" class="w-24"></div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button class="inline-flex items-center gap-1.5 text-xs font-medium text-ink-700 bg-white border border-[#e4e7ec] rounded-md px-3 py-1.5 hover:bg-[#f8f9fa] transition-colors">
+                                <i class="ph ph-export text-ink-400"></i> Export Dossier
+                            </button>
+                            <button class="inline-flex items-center gap-1.5 text-xs font-medium text-ink-700 bg-white border border-[#e4e7ec] rounded-md px-3 py-1.5 hover:bg-[#f8f9fa] transition-colors">
+                                <i class="ph ph-stack text-ink-400"></i> Bulk Action
+                            </button>
+                            <button class="inline-flex items-center gap-1.5 text-xs font-medium text-white bg-brand-600 rounded-md px-3 py-1.5 hover:bg-brand-700 transition-colors">
+                                <i class="ph ph-funnel"></i> Filter by Class
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 xl:grid-cols-2 divide-x divide-[#e4e7ec]">
+                        <!-- Recent Status Updates -->
+                        <div class="p-5">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-sm font-semibold text-ink-900">Recent Status Updates</h3>
+                                <button class="text-xs font-medium text-brand-600 hover:text-brand-700">View All</button>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-3 p-3 rounded-lg border border-[#e4e7ec] hover:border-brand-200 transition-colors">
+                                    <div class="w-8 h-8 rounded-md bg-rose-50 flex items-center justify-center text-rose-600 shrink-0"><i class="ph-fill ph-warning-octagon"></i></div>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-xs font-medium text-ink-900 truncate">Northwind Retail → Opposition Filed</p>
+                                        <p class="text-[11px] text-ink-400">2 hours ago · USPTO</p>
+                                    </div>
+                                    <span class="text-[11px] font-medium text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full whitespace-nowrap">Action Required</span>
+                                </div>
+                                <div class="flex items-center gap-3 p-3 rounded-lg border border-[#e4e7ec] hover:border-brand-200 transition-colors">
+                                    <div class="w-8 h-8 rounded-md bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0"><i class="ph-fill ph-seal-check"></i></div>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-xs font-medium text-ink-900 truncate">SwiftPay App → Registered</p>
+                                        <p class="text-[11px] text-ink-400">Yesterday · EUIPO</p>
+                                    </div>
+                                    <span class="text-[11px] font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full whitespace-nowrap">Success</span>
+                                </div>
+                                <div class="flex items-center gap-3 p-3 rounded-lg border border-[#e4e7ec] hover:border-brand-200 transition-colors">
+                                    <div class="w-8 h-8 rounded-md bg-amber-50 flex items-center justify-center text-amber-600 shrink-0"><i class="ph-fill ph-hourglass-high"></i></div>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-xs font-medium text-ink-900 truncate">CloudBase SaaS → Office Action Issued</p>
+                                        <p class="text-[11px] text-ink-400">May 27, 2026 · IP Australia</p>
+                                    </div>
+                                    <span class="text-[11px] font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full whitespace-nowrap">Pending</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Document Updates -->
+                        <div class="p-5">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-sm font-semibold text-ink-900">Recent Document Updates</h3>
+                                <button class="text-xs font-medium text-brand-600 hover:text-brand-700">View All</button>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-3 p-3 rounded-lg border border-[#e4e7ec] hover:border-brand-200 transition-colors">
+                                    <div class="w-8 h-8 rounded-md bg-rose-50 flex items-center justify-center text-rose-600 shrink-0"><i class="ph-fill ph-file-pdf"></i></div>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-xs font-medium text-ink-900 truncate">USPTO Notice of Allowance.pdf</p>
+                                        <p class="text-[11px] text-ink-400">2.4 MB · Uploaded May 26</p>
+                                    </div>
+                                    <button class="text-ink-400 hover:text-ink-900"><i class="ph ph-download-simple"></i></button>
+                                </div>
+                                <div class="flex items-center gap-3 p-3 rounded-lg border border-[#e4e7ec] hover:border-brand-200 transition-colors">
+                                    <div class="w-8 h-8 rounded-md bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0"><i class="ph-fill ph-file-doc"></i></div>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-xs font-medium text-ink-900 truncate">Opposition Response Draft.docx</p>
+                                        <p class="text-[11px] text-ink-400">1.1 MB · Edited 3h ago</p>
+                                    </div>
+                                    <button class="text-ink-400 hover:text-ink-900"><i class="ph ph-download-simple"></i></button>
+                                </div>
+                                <div class="flex items-center gap-3 p-3 rounded-lg border border-[#e4e7ec] hover:border-brand-200 transition-colors">
+                                    <div class="w-8 h-8 rounded-md bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0"><i class="ph-fill ph-file-pdf"></i></div>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-xs font-medium text-ink-900 truncate">WIPO Gazette Extract.pdf</p>
+                                        <p class="text-[11px] text-ink-400">840 KB · Uploaded May 24</p>
+                                    </div>
+                                    <button class="text-ink-400 hover:text-ink-900"><i class="ph ph-download-simple"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const FONT = '"Inter", sans-serif';
+        new ApexCharts(document.querySelector("#chart-filings"), {
+            chart: { type: 'bar', height: 260, fontFamily: FONT, toolbar: { show: false }, animations: { speed: 600 } },
+            series: [
+                { name: 'Applications', data: [42, 38, 51, 47, 55, 60, 53, 64, 71, 68, 76, 82] },
+                { name: 'Registrations', data: [28, 31, 26, 34, 29, 33, 38, 31, 40, 37, 42, 45] }
+            ],
+            colors: ['#4f46e5', '#98a2b3'],
+            plotOptions: { bar: { columnWidth: '52%', borderRadius: 4, borderRadiusApplication: 'end' } },
+            dataLabels: { enabled: false },
+            grid: { borderColor: '#eef0f3', strokeDashArray: 4, xaxis: { lines: { show: false } } },
+            xaxis: { categories: ['Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May'], axisBorder: { show: false }, axisTicks: { show: false }, labels: { style: { colors: '#667085', fontSize: '11px' } } },
+            yaxis: { labels: { style: { colors: '#98a2b3', fontSize: '11px' } } },
+            legend: { position: 'top', horizontalAlign: 'right', fontSize: '12px', markers: { radius: 4 }, labels: { colors: '#667085' } },
+            tooltip: { shared: true, intersect: false }
+        }).render();
+
+        new ApexCharts(document.querySelector("#spark-health"), {
+            chart: { type: 'area', height: 56, sparkline: { enabled: true }, fontFamily: FONT },
+            series: [{ data: [96, 97, 96.5, 98, 97.5, 98.5, 99, 98.8, 99.4] }],
+            stroke: { curve: 'smooth', width: 2, colors: ['#4f46e5'] },
+            fill: { type: 'gradient', gradient: { shadeIntensity: 0.3, opacityFrom: 0.25, opacityTo: 0, stops: [0, 100] }, colors: ['#4f46e5'] }
+        }).render();
+    </script>
+</body>
+</html>

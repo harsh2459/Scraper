@@ -1,0 +1,436 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}{{ search['query'] }} — IP India Results{% endblock %}
+{% block content %}
+
+<a class="back-link" href="{{ back_url or url_for('ipindia_index') }}">← {{ 'Back' if back_url else 'Back to IP India Scraper' }}</a>
+
+<h1>Results: {{ search['query'] }}</h1>
+<p class="subtitle">
+  {% if search['search_type'] == 'appno' %}Application Number lookup{% else %}Brand / Word Mark search{% endif %}
+  &middot; Email: {{ search['email_used'] }}
+  &middot; Scraped: {{ search['scraped_at'] }}
+</p>
+
+{% if search['error'] and not results %}
+  <div class="banner error">{{ search['error'] }}</div>
+  <div class="card">
+    <h2>What to do next</h2>
+    <p style="color:var(--muted);font-size:0.9rem">
+      The authentication succeeded but the search results could not be retrieved automatically.
+      This is because the exact search API endpoint on this government portal is determined
+      after your first manual login session. To resolve:
+    </p>
+    <ol style="color:var(--muted);font-size:0.88rem;line-height:1.8">
+      <li>Log in manually at
+        <a href="https://tmrsearch.ipindia.gov.in/estatus" target="_blank" rel="noopener" class="plain-link">
+          tmrsearch.ipindia.gov.in/estatus
+        </a>
+        using the same email address.
+      </li>
+      <li>Open browser DevTools → Network tab → perform a search.</li>
+      <li>Note the XHR request URL and payload (share with us to configure the search endpoint).</li>
+    </ol>
+  </div>
+{% elif results %}
+  <div class="count">{{ results|length }} record(s) found</div>
+
+  {% if results|length > 0 and columns %}
+  {% for row in results %}
+  <div class="card">
+    {% if results|length > 1 %}<h2>Result {{ loop.index }}</h2>{% endif %}
+    <div class="detail-grid">
+      {% for col in columns %}
+      {% if row.get(col) %}
+      <div class="detail-field">
+        <div class="label">{{ col }}</div>
+        <div class="value">{{ row.get(col) }}</div>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  <!-- Raw JSON download link -->
+  <div style="margin-top:12px">
+    <button class="secondary" onclick="downloadJSON()" id="dl-btn">{{ icons.download(14) }} Download JSON</button>
+  </div>
+
+  {% if documents %}
+  <div class="card" style="margin-top:16px">
+    <h2>Uploaded Documents</h2>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      {% for doc in documents %}
+      <a href="{{ url_for('ipindia_document', query=search['query'], filename=doc) }}"
+         style="padding:10px 16px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text);text-decoration:none;font-size:0.9rem;display:inline-flex;align-items:center;gap:6px">
+        {{ icons.document(14) }} {{ doc }}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if reminders %}
+  <div class="card" style="margin-top:16px">
+    <h2>Reminders</h2>
+    <div class="table-responsive">
+      <table class="corres-view-table">
+        <thead>
+          <tr><th>S.No</th><th>Corres. No</th><th>Corres. Date</th><th>Subject</th><th>Despatch No</th><th>Despatch Date</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for r in reminders %}
+          <tr>
+            <td>{{ r['s_no'] }}</td>
+            <td>{{ r['corres_no'] }}</td>
+            <td>{{ r['corres_date'] }}</td>
+            <td>{{ r['subject'] }}</td>
+            <td>{{ r['despatch_no'] }}</td>
+            <td>{{ r['despatch_date'] }}</td>
+            <td>
+              {% if r['document_path'] %}
+              <a href="{{ url_for('ipindia_reminder_document', query=search['query'], filename=r['document_path']) }}" class="plain-link">{{ icons.download(13) }} View</a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if correspondence %}
+  <div class="card" style="margin-top:16px">
+    <h2>Correspondence &amp; Notices</h2>
+    <div class="table-responsive">
+      <table class="corres-view-table">
+        <thead>
+          <tr><th>S.No</th><th>Corres. No</th><th>Corres. Date</th><th>Subject</th><th>Despatch No</th><th>Despatch Date</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for c in correspondence %}
+          <tr>
+            <td>{{ c['s_no'] }}</td>
+            <td>{{ c['corres_no'] }}</td>
+            <td>{{ c['corres_date'] }}</td>
+            <td>{{ c['subject'] }}</td>
+            <td>{{ c['despatch_no'] }}</td>
+            <td>{{ c['despatch_date'] }}</td>
+            <td>
+              {% if c['document_path'] %}
+              <a href="{{ url_for('ipindia_correspondence_document', query=search['query'], filename=c['document_path']) }}" class="plain-link">{{ icons.download(13) }} View</a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if tma_details %}
+  <div class="card" style="margin-top:16px">
+    <h2>Application Details (from {{ tma_details.form_type or 'TM-A' }} form)</h2>
+    <div class="detail-grid">
+      {% if tma_details.temp_ref_no %}<div class="detail-field"><div class="label">Temp. Ref. No.</div><div class="value">{{ tma_details.temp_ref_no }}</div></div>{% endif %}
+      {% if tma_details.fee %}<div class="detail-field"><div class="label">Fee</div><div class="value">{{ tma_details.fee }}</div></div>{% endif %}
+      {% if tma_details.application_filed_as %}<div class="detail-field"><div class="label">Filed As</div><div class="value">{{ tma_details.application_filed_as }}</div></div>{% endif %}
+      {% if tma_details.language %}<div class="detail-field"><div class="label">Language</div><div class="value">{{ tma_details.language }}</div></div>{% endif %}
+      {% if tma_details.receipt_no %}<div class="detail-field"><div class="label">Receipt No.</div><div class="value">{{ tma_details.receipt_no }}</div></div>{% endif %}
+      {% if tma_details.receipt_date %}<div class="detail-field"><div class="label">Receipt Date</div><div class="value">{{ tma_details.receipt_date }}</div></div>{% endif %}
+      {% if tma_details.receipt_amount %}<div class="detail-field"><div class="label">Receipt Amount</div><div class="value">{{ tma_details.receipt_amount }}</div></div>{% endif %}
+      {% if tma_details.form_no %}<div class="detail-field"><div class="label">Form No.</div><div class="value">{{ tma_details.form_no }}</div></div>{% endif %}
+      {% if tma_details.agent_code %}<div class="detail-field"><div class="label">Agent Code</div><div class="value">{{ tma_details.agent_code }}</div></div>{% endif %}
+      {% if tma_details.proprietor_code %}<div class="detail-field"><div class="label">Proprietor Code</div><div class="value">{{ tma_details.proprietor_code }}</div></div>{% endif %}
+      {% if tma_details.application_date %}<div class="detail-field"><div class="label">Application Date</div><div class="value">{{ tma_details.application_date }}</div></div>{% endif %}
+      {% if tma_details.registry_office %}<div class="detail-field"><div class="label">Registry Office</div><div class="value">{{ tma_details.registry_office }}</div></div>{% endif %}
+    </div>
+
+    {% if tma_details.applicant %}
+    <h3 style="margin-top:20px;font-size:1rem">Applicant</h3>
+    <div class="detail-grid">
+      {% if tma_details.applicant.name %}<div class="detail-field"><div class="label">Name</div><div class="value">{{ tma_details.applicant.name }}</div></div>{% endif %}
+      {% if tma_details.applicant.partners %}<div class="detail-field"><div class="label">Partners</div><div class="value">{{ tma_details.applicant.partners }}</div></div>{% endif %}
+      {% if tma_details.applicant.address %}<div class="detail-field"><div class="label">Address</div><div class="value">{{ tma_details.applicant.address }}</div></div>{% endif %}
+      {% if tma_details.applicant.address_for_service %}<div class="detail-field"><div class="label">Address for Service</div><div class="value">{{ tma_details.applicant.address_for_service }}</div></div>{% endif %}
+      {% if tma_details.applicant.country %}<div class="detail-field"><div class="label">Country</div><div class="value">{{ tma_details.applicant.country }}</div></div>{% endif %}
+      {% if tma_details.applicant.jurisdiction %}<div class="detail-field"><div class="label">Jurisdiction</div><div class="value">{{ tma_details.applicant.jurisdiction }}</div></div>{% endif %}
+      {% if tma_details.applicant.mobile %}
+      <div class="detail-field">
+        <div class="label">Mobile</div>
+        <div class="value">
+          {{ tma_details.applicant.mobile }}
+          {% if '*' not in tma_details.applicant.mobile %}<span class="pii-badge" title="Not masked by the portal">{{ icons.warning(11) }} shown in full</span>{% endif %}
+        </div>
+      </div>
+      {% endif %}
+      {% if tma_details.applicant.email %}
+      <div class="detail-field">
+        <div class="label">Email</div>
+        <div class="value">
+          {{ tma_details.applicant.email }}
+          {% if '*' not in tma_details.applicant.email %}<span class="pii-badge" title="Not masked by the portal">{{ icons.warning(11) }} shown in full</span>{% endif %}
+        </div>
+      </div>
+      {% endif %}
+      {% if tma_details.applicant.nature %}<div class="detail-field"><div class="label">Nature</div><div class="value">{{ tma_details.applicant.nature }}</div></div>{% endif %}
+      {% if tma_details.applicant.legal_status %}<div class="detail-field"><div class="label">Legal Status</div><div class="value">{{ tma_details.applicant.legal_status }}</div></div>{% endif %}
+    </div>
+    {% endif %}
+
+    {% if tma_details.agent %}
+    <h3 style="margin-top:20px;font-size:1rem">{{ 'Correspondence Address' if not tma_details.agent.name else 'Agent' }}</h3>
+    <div class="detail-grid">
+      {% if tma_details.agent.name %}<div class="detail-field"><div class="label">Name</div><div class="value">{{ tma_details.agent.name }}</div></div>{% endif %}
+      {% if tma_details.agent.address %}<div class="detail-field"><div class="label">Address</div><div class="value">{{ tma_details.agent.address }}</div></div>{% endif %}
+      {% if tma_details.agent.nature %}<div class="detail-field"><div class="label">Nature</div><div class="value">{{ tma_details.agent.nature }}</div></div>{% endif %}
+      {% if tma_details.agent.registration_no %}<div class="detail-field"><div class="label">Registration No.</div><div class="value">{{ tma_details.agent.registration_no }}</div></div>{% endif %}
+    </div>
+    {% endif %}
+
+    {% if tma_details.mark %}
+    <h3 style="margin-top:20px;font-size:1rem">Mark</h3>
+    {% if tma_details.logo_filename %}
+    {% set logo_url = url_for('ipindia_logo', query=search['query'], filename=tma_details.logo_filename) %}
+    <a href="{{ logo_url }}" target="_blank" rel="noopener" title="Open full size">
+      <img src="{{ logo_url }}" alt="Trademark logo" class="mark-logo">
+    </a>
+    {% endif %}
+    <div class="detail-grid">
+      {% if tma_details.mark.category %}<div class="detail-field"><div class="label">Category</div><div class="value">{{ tma_details.mark.category }}</div></div>{% endif %}
+      {% if tma_details.mark.trade_mark %}<div class="detail-field"><div class="label">Trade Mark</div><div class="value">{{ tma_details.mark.trade_mark }}</div></div>{% endif %}
+      {% if tma_details.mark.image_description %}<div class="detail-field"><div class="label">Image Description</div><div class="value">{{ tma_details.mark.image_description }}</div></div>{% endif %}
+    </div>
+    {% endif %}
+
+    {% if tma_details.class %}
+    <h3 style="margin-top:20px;font-size:1rem">Class {{ tma_details.class.number }}</h3>
+    <p style="color:var(--muted);font-size:0.88rem;line-height:1.6">{{ tma_details.class.description }}</p>
+    {% endif %}
+
+    {% if tma_details.use_statement %}
+    <h3 style="margin-top:20px;font-size:1rem">Use of Mark</h3>
+    <p style="color:var(--muted);font-size:0.88rem">{{ tma_details.use_statement }}</p>
+    {% endif %}
+
+    {% if tma_details.other_information %}
+    <h3 style="margin-top:20px;font-size:1rem">Other Information</h3>
+    <p style="color:var(--muted);font-size:0.88rem;line-height:1.6">{{ tma_details.other_information }}</p>
+    {% endif %}
+
+    {% if tma_details.verification %}
+    <h3 style="margin-top:20px;font-size:1rem">Verification</h3>
+    <div class="detail-grid">
+      {% if tma_details.verification.date %}<div class="detail-field"><div class="label">Date</div><div class="value">{{ tma_details.verification.date }}</div></div>{% endif %}
+      {% if tma_details.verification.signed_for %}<div class="detail-field"><div class="label">Signed For</div><div class="value">{{ tma_details.verification.signed_for }}</div></div>{% endif %}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+{% else %}
+  <div class="banner error">No results were returned.</div>
+{% endif %}
+
+{% if session_alive %}
+<div class="card" style="margin-top:16px">
+  <h2>Search another number</h2>
+  <p style="color:var(--muted);font-size:0.88rem;margin-top:0">
+    You're still logged in — search another Application Number without repeating login/OTP.
+  </p>
+  <form method="post" action="{{ url_for('ipindia_search_another') }}" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+    <input type="hidden" name="email" value="{{ search['email_used'] }}">
+    <input type="hidden" name="search_type" value="{{ search['search_type'] }}">
+    <input type="hidden" name="pending_id" value="{{ pending_id }}">
+    <div class="field-g">
+      <label class="field-label" for="next-query">Application Number</label>
+      <input type="text" id="next-query" name="query" required placeholder="e.g. 7765565">
+    </div>
+    <button type="submit">{{ icons.search(14) }} Search</button>
+  </form>
+</div>
+{% endif %}
+
+{% set cluster_seed = results[0].get('Trade Mark') if results else None %}
+{% if cluster_seed %}
+<div class="card" id="cluster-card" style="margin-top:16px">
+  <h2>{{ icons.dice(18) }} Find Related via QuickCompany</h2>
+  <p style="color:var(--muted);font-size:0.88rem;margin-top:0">
+    Searches QuickCompany for "<strong>{{ cluster_seed }}</strong>", looks up every Application ID it
+    finds on IP India, then keeps expanding outward using each new hit's own trade mark name —
+    growing the dataset until you stop it.
+  </p>
+  <div id="cluster-panel">
+    <button type="button" id="cluster-open-btn">{{ icons.play(14) }} Start Cluster Expand</button>
+  </div>
+</div>
+{% endif %}
+
+<script>
+(function(){
+  var panel = document.getElementById("cluster-panel");
+  var openBtn = document.getElementById("cluster-open-btn");
+  if (!panel || !openBtn) return;
+
+  var seed = {{ cluster_seed | default('') | tojson }};
+  var backUrl = window.location.pathname + window.location.search;
+
+  function bindStartForm(){
+    var form = panel.querySelector("form.cluster-start-form");
+    if (!form) return;
+    form.addEventListener("submit", function(e){
+      e.preventDefault();
+      fetch(form.action, { method: "POST", body: new FormData(form) })
+        .then(function(r){ return r.text(); })
+        .then(function(html){ panel.innerHTML = html; bindAll(); })
+        .catch(function(){ panel.innerHTML = '<div class="banner error">Request failed. Try again.</div>'; });
+    });
+  }
+
+  function bindOtpForm(){
+    var form = panel.querySelector("form.cluster-otp-form");
+    if (!form) return;
+    form.addEventListener("submit", function(e){
+      e.preventDefault();
+      fetch(form.action, { method: "POST", body: new FormData(form) })
+        .then(function(r){ return r.text(); })
+        .then(function(html){ panel.innerHTML = html; bindAll(); })
+        .catch(function(){ panel.innerHTML = '<div class="banner error">Request failed. Try again.</div>'; });
+    });
+  }
+
+  function bindJobPoll(){
+    var jobEl = panel.querySelector("[data-cluster-job-id]");
+    if (!jobEl) return;
+    var jobId = jobEl.getAttribute("data-cluster-job-id");
+    var phaseEl = panel.querySelector(".cluster-phase");
+    var banner = panel.querySelector(".cluster-banner");
+    var stopBtn = panel.querySelector(".cluster-stop-btn");
+
+    if (stopBtn) {
+      stopBtn.addEventListener("click", function(){
+        fetch("/ipindia/cluster/stop/" + jobId, { method: "POST" });
+      });
+    }
+
+    function poll(){
+      fetch("/ipindia/cluster/status/" + jobId)
+        .then(function(r){ return r.json(); })
+        .then(function(j){
+          if (j.status === "unknown") return;
+          if (phaseEl) phaseEl.textContent = j.phase || "Working…";
+          panel.querySelector(".cluster-stat-hits").textContent = j.hits.length;
+          panel.querySelector(".cluster-stat-candidates").textContent = j.total_candidates;
+          panel.querySelector(".cluster-stat-skipped").textContent = j.skipped_existing;
+          panel.querySelector(".cluster-stat-attempts").textContent = j.attempts_count;
+          panel.querySelector(".cluster-stat-misses").textContent = j.misses_count;
+          panel.querySelector(".cluster-stat-errors").textContent = j.errors_count;
+
+          if (j.status === "running") {
+            setTimeout(poll, 2000);
+          } else {
+            if (banner) {
+              banner.className = "banner " + (j.status === "error" ? "error" : "success") + " cluster-banner";
+              banner.textContent = j.message || "Finished.";
+            }
+            if (stopBtn) stopBtn.style.display = "none";
+          }
+        })
+        .catch(function(){ setTimeout(poll, 3000); });
+    }
+    poll();
+  }
+
+  function bindAll(){
+    bindStartForm();
+    bindOtpForm();
+    bindJobPoll();
+  }
+
+  openBtn.addEventListener("click", function(){
+    var fd = new FormData();
+    fd.append("mark_name", seed);
+    fd.append("back", backUrl);
+    fetch({{ url_for('cluster_start') | tojson }}, { method: "POST", body: fd })
+      .then(function(r){ return r.text(); })
+      .then(function(html){ panel.innerHTML = html; bindAll(); })
+      .catch(function(){ panel.innerHTML = '<div class="banner error">Request failed. Try again.</div>'; });
+  });
+})();
+</script>
+
+<script>
+function downloadJSON() {
+  const data = {{ results | tojson }};
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
+  // Use textContent-safe approach for filename
+  const query = {{ search['query'] | tojson }};
+  a.download = "ipindia_" + query.replace(/[^a-z0-9]/gi, "_") + ".json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+</script>
+
+<style>
+  .mark-logo {
+    display: block;
+    max-width: 100%;
+    width: fit-content;
+    max-height: 420px;
+    margin: 10px 0 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    padding: 10px;
+    object-fit: contain;
+    cursor: zoom-in;
+  }
+
+  .pii-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 0.7rem; font-weight: 600;
+    padding: 2px 7px; border-radius: 10px;
+    background: var(--error-bg); color: var(--error-text);
+    margin-left: 8px; vertical-align: middle;
+  }
+
+  .table-responsive { overflow-x: auto; }
+  .corres-view-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+  .corres-view-table th, .corres-view-table td {
+    padding: 8px 10px; border: 1px solid var(--border); text-align: left; white-space: nowrap;
+  }
+  .corres-view-table th { background: var(--row-hover); font-weight: 600; }
+
+  .field-g { display: flex; flex-direction: column; gap: 5px; }
+  .field-label { font-size: 0.85rem; font-weight: 600; color: var(--muted); }
+  .field-g input {
+    padding: 10px 12px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 0.95rem;
+    background: var(--bg); color: var(--text);
+  }
+  .field-g input:focus { outline: none; border-color: var(--accent); }
+  .btn-secondary {
+    padding: 10px 16px; border: 1px solid var(--border);
+    border-radius: 8px; background: transparent;
+    color: var(--text); cursor: pointer; font-size: 0.9rem;
+    text-decoration: none; display: inline-block;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .spinner {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2.5px solid var(--border); border-top-color: var(--accent);
+    animation: spin 0.8s linear infinite; flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+{% endblock %}

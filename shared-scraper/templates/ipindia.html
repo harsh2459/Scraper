@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}IP India e-Status Scraper{% endblock %}
+{% block content %}
+
+<h1>{{ icons.bank(20) }} IP India e-Status Scraper</h1>
+<p class="subtitle">
+  Official Government Trademark Portal &middot;
+  <a class="plain-link" href="https://tmrsearch.ipindia.gov.in/estatus" target="_blank" rel="noopener">tmrsearch.ipindia.gov.in/estatus</a>
+</p>
+
+{% if otp_configured %}
+  <span class="otp-badge active" style="margin-bottom:18px;display:inline-flex">{{ icons.check_circle(14) }} Email OTP Ready</span>
+{% else %}
+  <span class="otp-badge inactive" style="margin-bottom:18px;display:inline-flex">
+    {{ icons.warning(14) }} Email OTP not configured &mdash;
+    <a href="{{ url_for('settings') }}" style="color:inherit;margin-left:4px;text-decoration:underline">Set up now</a>
+  </span>
+{% endif %}
+
+{% if error %}
+<div class="banner error" style="margin-bottom:16px">{{ error }}</div>
+{% endif %}
+
+{% if job_id %}
+<!-- ── Progress bar (after Send OTP) ── -->
+<div class="banner progress" id="job-banner">
+  <div style="display:flex;align-items:center;gap:10px;font-weight:600">
+    <div class="spinner"></div>
+    <span id="job-step">Sending OTP…</span>
+  </div>
+</div>
+<script>
+(function(){
+  var jobId  = {{ job_id | tojson }};
+  var stepEl = document.getElementById("job-step");
+  var banner = document.getElementById("job-banner");
+  function poll(){
+    fetch("/ipindia/status/" + jobId)
+      .then(function(r){ return r.json(); })
+      .then(function(j){
+        if(j.status === "running"){
+          stepEl.textContent = j.step || "Working…";
+          setTimeout(poll, 1500);
+        } else if(j.status === "done"){
+          if(j.search_id){
+            var url = "/ipindia/result/" + j.search_id;
+            if (j.pending_id) { url += "?pending_id=" + encodeURIComponent(j.pending_id); }
+            window.location.href = url;
+          }
+          else { banner.className="banner success"; banner.textContent = (j.message||"Done."); }
+        } else {
+          banner.className = "banner error";
+          banner.textContent = "Error: " + (j.message || "Unknown error.");
+        }
+      })
+      .catch(function(){ setTimeout(poll, 3000); });
+  }
+  poll();
+})();
+</script>
+
+{% elif step == 3 %}
+<!-- ═══════════════════════════════════════════════════════════
+     STEP 3 — Enter OTP
+     ═══════════════════════════════════════════════════════════ -->
+<div class="card">
+  <h2>Step 3 — Enter OTP</h2>
+  <p style="color:var(--muted);font-size:0.88rem;margin-top:0">
+    OTP was sent to <strong>{{ email }}</strong>. Please check your inbox and enter it below.
+  </p>
+
+  <form method="post" action="{{ url_for('ipindia_scrape') }}" style="margin-top:20px">
+    <!-- Pass through all data -->
+    <input type="hidden" name="email"          value="{{ email }}">
+    <input type="hidden" name="query"           value="{{ query }}">
+    <input type="hidden" name="search_type"     value="{{ search_type }}">
+    <input type="hidden" name="pending_id"      value="{{ pending_id }}">
+
+    <div style="margin-bottom:16px">
+      <label class="field-label" for="otp-ans">Enter the 6-digit OTP <span class="req">*</span></label>
+      <input type="number" id="otp-ans" name="otp_code"
+             min="100000" max="999999" required autofocus
+             placeholder="123456"
+             style="max-width:180px;font-size:1.4rem;font-weight:700;letter-spacing:3px;text-align:center">
+      <div style="color:var(--muted);font-size:0.8rem;margin-top:4px">
+        Check your email for a message from <strong>delhi.tmr@nic.in</strong>.
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <button type="submit">{{ icons.search(15) }} Verify &amp; Scrape</button>
+      <a href="{{ url_for('ipindia_index') }}" class="btn-secondary">{{ icons.back(14) }} Start over</a>
+    </div>
+  </form>
+</div>
+
+{% else %}
+<!-- ═══════════════════════════════════════════════════════════
+     STEP 1 — Enter email + query, then Get CAPTCHA
+     ═══════════════════════════════════════════════════════════ -->
+<div class="card">
+  <h2>Step 1 — Enter your details</h2>
+
+  <form method="post" action="{{ url_for('ipindia_get_captcha') }}" class="auth-mode-form">
+    <input type="hidden" name="auth_mode" class="auth-mode-input" value="{{ 'pool' if pool_free_count else 'manual' }}">
+
+    <div class="ip-row" style="margin-bottom:14px">
+      <div class="field-g">
+        <label class="field-label">Login</label>
+        <div class="auth-mode-toggle">
+          <button type="button" class="auth-tab {{ 'active' if pool_free_count }}" onclick="setAuthMode(this, 'pool')">
+            {{ icons.bolt(12) }} Auto (pool) — {{ pool_free_count }} free
+          </button>
+          <button type="button" class="auth-tab {{ 'active' if not pool_free_count }}" onclick="setAuthMode(this, 'manual')">Manual entry</button>
+        </div>
+      </div>
+      <div class="field-g">
+        <label class="field-label" for="ip-stype">Search By</label>
+        <select id="ip-stype" name="search_type">
+          <option value="name"  {% if prev_search_type != 'appno' %}selected{% endif %}>Brand / Word Mark</option>
+          <option value="appno" {% if prev_search_type == 'appno' %}selected{% endif %}>Application Number</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="ip-row auth-manual-email" style="margin-bottom:14px;display:{{ 'none' if pool_free_count else 'grid' }}">
+      <div class="field-g">
+        <label class="field-label" for="ip-email">Your Email Address <span class="req">*</span></label>
+        <input type="email" id="ip-email" name="email" {{ 'required' if not pool_free_count }}
+               value="{{ prev_email or '' }}"
+               placeholder="harshbabariya2459@gmail.com"
+               autocomplete="username">
+        <small class="hint">IP India sends OTP to this address. Must be registered with them.</small>
+      </div>
+    </div>
+
+    <div class="field-g" style="margin-bottom:18px">
+      <label class="field-label" for="ip-query">Search Query <span class="req">*</span></label>
+      <input type="text" id="ip-query" name="query" required
+             value="{{ prev_query or '' }}"
+             placeholder="e.g. Tata or AIRTEL">
+    </div>
+
+    <button type="submit">{{ icons.lock(15) }} Get CAPTCHA</button>
+  </form>
+</div>
+{% endif %}
+
+<!-- ── Search History ── -->
+<div class="card">
+  <h2>Search History</h2>
+  <p style="color:var(--muted);font-size:0.88rem;margin:0 0 14px">
+    Browse past searches grouped by date.
+  </p>
+  <a href="{{ url_for('ipindia_history_dates') }}" class="btn-secondary" style="display:inline-flex;align-items:center;gap:8px">
+    {{ icons.history(15) }} Browse Search History
+  </a>
+</div>
+
+<style>
+  /* ── CAPTCHA display (matches IP India style) ── */
+  .captcha-wrap {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    display: inline-block;
+  }
+  .captcha-label-txt {
+    color: #198754;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 10px;
+  }
+  .captcha-row { display: flex; align-items: center; gap: 14px; }
+  .captcha-box {
+    border: 3px dashed #198754;
+    border-radius: 6px;
+    padding: 10px 22px;
+    font-size: 2.2rem;
+    font-weight: 900;
+    letter-spacing: 10px;
+    color: var(--text);
+    background: var(--card-bg);
+    min-width: 220px;
+    text-align: center;
+    font-family: monospace;
+  }
+  .captcha-eq { font-size: 1.5rem; font-weight: 700; color: var(--muted); }
+
+  /* ── layout ── */
+  .ip-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 560px) { .ip-row { grid-template-columns: 1fr; } }
+  .field-g { display: flex; flex-direction: column; gap: 5px; }
+  .field-label { font-size: 0.85rem; font-weight: 600; color: var(--muted); }
+  .field-g input, .field-g select {
+    padding: 10px 12px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 0.95rem;
+    background: var(--bg); color: var(--text);
+  }
+  .field-g input:focus, .field-g select:focus { outline: none; border-color: var(--accent); }
+  .req { color: var(--error-text); }
+  .hint { color: var(--muted); font-size: 0.78rem; }
+  .btn-secondary {
+    padding: 10px 16px; border: 1px solid var(--border);
+    border-radius: 8px; background: transparent;
+    color: var(--text); cursor: pointer; font-size: 0.9rem;
+    text-decoration: none; display: inline-block;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .spinner {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2.5px solid var(--border); border-top-color: var(--accent);
+    animation: spin 0.8s linear infinite; flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+{% endblock %}

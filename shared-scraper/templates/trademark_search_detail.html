@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}{{ query }} — Trademarks{% endblock %}
+{% block content %}
+  <a class="back-link" href="{{ url_for('index') }}">&larr; Back to all searches</a>
+  <h1>{{ query }} <span class="subtitle" style="font-size:0.6em">(trademark)</span></h1>
+  <p class="subtitle">{{ trademarks|length }} trademark{{ 's' if trademarks|length != 1 else '' }} found &middot; {{ folder }}</p>
+
+  <div class="card">
+    <form method="post" action="{{ url_for('open_folder', query=query) }}">
+      <button type="submit" class="secondary">Open folder in File Explorer</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="filter-bar">
+      <form class="inline" onsubmit="return false;">
+        <input type="text" id="filter-text" placeholder="Search name, application ID or proprietor">
+        <button type="button" id="filter-search-btn">Search</button>
+      </form>
+      <div class="filter-row">
+        <select id="filter-class">
+          <option value="">All Classes</option>
+        </select>
+        <select id="filter-status">
+          <option value="">All Statuses</option>
+        </select>
+        <select id="filter-state">
+          <option value="">All States</option>
+        </select>
+        <button type="button" id="filter-clear-btn" class="secondary">Clear filters</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="count" id="filter-count">{{ trademarks|length }} trademark{{ 's' if trademarks|length != 1 else '' }} shown</div>
+    <div class="table-scroll">
+    <table id="tm-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Application ID</th>
+          <th>Status</th>
+          <th>Date of Application</th>
+          <th>Classes</th>
+          <th>State</th>
+          <th>Proprietor</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in trademarks %}
+        <tr class="clickable"
+            data-name="{{ (t['name'] or '') | lower }}"
+            data-appid="{{ (t['application_id'] or '') | lower }}"
+            data-proprietor="{{ (t['proprietor'] or '') | lower }}"
+            data-class="{{ t['classes'] or '' }}"
+            data-status="{{ t['status'] or (t['error'] and 'Error') or '' }}"
+            data-state="{{ t['state'] or '' }}"
+            onclick="window.location='{{ url_for('trademark_detail', trademark_id=t['id']) }}'">
+          <td>{{ t['name'] or t['query'] }}</td>
+          <td>{{ t['application_id'] or '' }}</td>
+          <td class="{{ 'status-active' if t['status'] in ('Registered', 'Accepted') else 'status-other' }}">{{ t['status'] or (t['error'] and 'Error') or '' }}</td>
+          <td>{{ t['date_of_application'] or '' }}</td>
+          <td>{{ t['classes'] or '' }}</td>
+          <td>{{ t['state'] or '' }}</td>
+          <td title="{{ t['proprietor'] or '' }}">{{ t['proprietor'] or '' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+<script>
+(function () {
+  const table = document.getElementById("tm-table");
+  const rows = Array.from(table.querySelectorAll("tbody tr"));
+  const textInput = document.getElementById("filter-text");
+  const classSelect = document.getElementById("filter-class");
+  const statusSelect = document.getElementById("filter-status");
+  const stateSelect = document.getElementById("filter-state");
+  const countEl = document.getElementById("filter-count");
+  const searchBtn = document.getElementById("filter-search-btn");
+  const clearBtn = document.getElementById("filter-clear-btn");
+
+  function uniqueSorted(values) {
+    return Array.from(new Set(values.filter((v) => v))).sort();
+  }
+
+  function populateSelect(select, values) {
+    for (const v of uniqueSorted(values)) {
+      const opt = document.createElement("option");
+      opt.value = v;
+      opt.textContent = v;
+      select.appendChild(opt);
+    }
+  }
+
+  populateSelect(classSelect, rows.map((r) => r.dataset.class));
+  populateSelect(statusSelect, rows.map((r) => r.dataset.status));
+  populateSelect(stateSelect, rows.map((r) => r.dataset.state));
+
+  function applyFilters() {
+    const text = textInput.value.trim().toLowerCase();
+    const cls = classSelect.value;
+    const status = statusSelect.value;
+    const state = stateSelect.value;
+    let shown = 0;
+
+    for (const row of rows) {
+      const matchesText = !text ||
+        row.dataset.name.includes(text) ||
+        row.dataset.appid.includes(text) ||
+        row.dataset.proprietor.includes(text);
+      const matchesClass = !cls || row.dataset.class === cls;
+      const matchesStatus = !status || row.dataset.status === status;
+      const matchesState = !state || row.dataset.state === state;
+
+      const visible = matchesText && matchesClass && matchesStatus && matchesState;
+      row.style.display = visible ? "" : "none";
+      if (visible) shown++;
+    }
+    countEl.textContent = `${shown} trademark${shown === 1 ? "" : "s"} shown`;
+  }
+
+  textInput.addEventListener("input", applyFilters);
+  classSelect.addEventListener("change", applyFilters);
+  statusSelect.addEventListener("change", applyFilters);
+  stateSelect.addEventListener("change", applyFilters);
+  searchBtn.addEventListener("click", applyFilters);
+  clearBtn.addEventListener("click", () => {
+    textInput.value = "";
+    classSelect.value = "";
+    statusSelect.value = "";
+    stateSelect.value = "";
+    applyFilters();
+  });
+})();
+</script>
+{% endblock %}

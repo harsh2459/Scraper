@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} — {% endblock %}
+
+{% block extra_css %}
+  .placeholder-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;text-align:center;gap:14px;}
+  .placeholder-wrap h2{font-size:17px;font-weight:700;color:var(--fg);}
+  .placeholder-wrap p{font-size:13.5px;color:var(--muted-fg);max-width:420px;line-height:1.6;}
+  .placeholder-icon{width:56px;height:56px;border-radius:50%;background:var(--muted2);display:flex;align-items:center;justify-content:center;font-size:24px;}
+{% endblock %}
+
+{% block content %}
+<div class="view-head"><h1>{{ title }}</h1></div>
+<div class="placeholder-wrap">
+  <div class="placeholder-icon">📋</div>
+  <h2>{{ title }}</h2>
+  <p>{{ description }}</p>
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}{{ start }}-{{ end }} — Search History{% endblock %}
+{% block content %}
+
+<a class="back-link" href="{{ url_for('ipindia_history_date', date_str=date_str) }}">{{ icons.back(14) }} Back to {{ date_str }}</a>
+
+<h1>{{ icons.hash(20) }} {{ start if start == end else start ~ '-' ~ end }}</h1>
+<p class="subtitle">{{ total }} result(s){% if total_pages > 1 %} &middot; page {{ page }} of {{ total_pages }}{% endif %}</p>
+
+{% if rows %}
+  <div class="search-grid">
+    {% for s in rows %}
+    <a class="search-card" href="{{ url_for('ipindia_result', search_id=s['id'], back=request.full_path) }}">
+      <div class="name">{{ s['query'] }}</div>
+      <div class="meta">
+        {% if s['search_type'] == 'appno' %}{{ icons.hash(13) }} App No.{% elif s['search_type'] == 'appno_discover' %}{{ icons.dice(13) }} Discovered{% else %}{{ icons.tag(13) }} Brand{% endif %}
+        &middot; {{ s['result_count'] or 0 }} result(s)
+      </div>
+      {% if s['error'] %}<div class="meta" style="color:var(--error-text);display:flex;align-items:center;gap:6px">{{ icons.warning(13) }} {{ s['error'][:60] }}</div>{% endif %}
+    </a>
+    {% endfor %}
+  </div>
+
+  {% if total_pages > 1 %}
+  <div style="display:flex;gap:10px;align-items:center;justify-content:center;margin-top:20px">
+    {% if page > 1 %}
+    <a class="btn-secondary" href="{{ url_for('ipindia_history_range', date_str=date_str, start=start, end=end, page=page-1) }}">Previous</a>
+    {% endif %}
+    <span style="color:var(--muted);font-size:0.88rem">Page {{ page }} of {{ total_pages }}</span>
+    {% if page < total_pages %}
+    <a class="btn-secondary" href="{{ url_for('ipindia_history_range', date_str=date_str, start=start, end=end, page=page+1) }}">Next</a>
+    {% endif %}
+  </div>
+  {% endif %}
+{% else %}
+  <div class="empty">No results found in this range.</div>
+{% endif %}
+
+<style>
+  .btn-secondary {
+    padding: 10px 16px; border: 1px solid var(--border);
+    border-radius: 8px; background: transparent;
+    color: var(--text); cursor: pointer; font-size: 0.9rem;
+    text-decoration: none; display: inline-block;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+</style>
+
+{% endblock %}

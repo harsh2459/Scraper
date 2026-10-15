@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Environment & secrets — NEVER commit these
+.env
+.env.*
+!.env.*.example
+.runtime/
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+node_modules/
+*.err
+*.secret_key
+
+# Database (local data only)
+*.db
+
+# Exports / runtime data
+data/
+tm_manager/Journal/
+tm_manager/_journal_logo_cache/
+tm_manager/_logo_cache/
+
+# Run logs
+_run_*.log
+_run_*.err
+*.log
+
+# venv
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Large dumps / archives / scratch
+*.sql
+*.sql~
+*.dump
+*.tar.gz
+*.zip
+scratch/
+search_page.html
+
+# Private keys / certs, journal PDFs
+*.key
+*.pem
+**/certs/
+**/Journal/
+**/_journal_logo_cache/
+**/_logo_cache/
+pdf/

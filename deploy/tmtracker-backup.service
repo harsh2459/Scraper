@@ -1,0 +1,17 @@
+[Unit]
+Description=TM Tracker - Daily Postgres backup
+After=network-online.target postgresql.service
+
+[Service]
+Type=oneshot
+User=tmtracker
+Group=tmtracker
+WorkingDirectory=/opt/tmtracker
+ExecStart=/bin/bash /opt/tmtracker/deploy/backup.sh
+StandardOutput=append:/var/log/tmtracker/backup.log
+StandardError=append:/var/log/tmtracker/backup.err
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/opt/tmtracker /var/log/tmtracker

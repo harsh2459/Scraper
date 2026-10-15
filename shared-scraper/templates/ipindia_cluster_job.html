@@ -1,0 +1,38 @@
+{% import "_icons.html" as icons %}
+<div data-cluster-job-id="{{ job_id }}">
+  <div class="banner progress cluster-banner">
+    <div style="display:flex;align-items:center;gap:10px;font-weight:600">
+      <div class="spinner"></div>
+      <span class="cluster-phase">Working…</span>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;margin:16px 0">
+    <div>
+      <div class="field-label">Saved</div>
+      <div class="cluster-stat-hits" style="font-size:1.3rem;font-weight:700">0</div>
+    </div>
+    <div>
+      <div class="field-label">Candidates found</div>
+      <div class="cluster-stat-candidates" style="font-size:1.3rem;font-weight:700">0</div>
+    </div>
+    <div>
+      <div class="field-label">Already known</div>
+      <div class="cluster-stat-skipped" style="font-size:1.3rem;font-weight:700">0</div>
+    </div>
+    <div>
+      <div class="field-label">Attempts</div>
+      <div class="cluster-stat-attempts" style="font-size:1.3rem;font-weight:700">0</div>
+    </div>
+    <div>
+      <div class="field-label">Misses</div>
+      <div class="cluster-stat-misses" style="font-size:1.3rem;font-weight:700">0</div>
+    </div>
+    <div>
+      <div class="field-label">Errors</div>
+      <div class="cluster-stat-errors" style="font-size:1.3rem;font-weight:700">0</div>
+    </div>
+  </div>
+
+  <button type="button" class="btn-secondary cluster-stop-btn" style="border-color:var(--error-text);color:var(--error-text)">{{ icons.stop(14) }} Stop</button>
+</div>

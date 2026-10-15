@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}Trademark Scraper{% endblock %}
+{% block content %}
+  <h1>Trademark Scraper</h1>
+  <p class="subtitle">Runs locally against quickcompany.in/trademarks &middot; data stored in PostgreSQL and data/&lt;search&gt;/</p>
+
+  {% if otp_configured %}
+  <span class="otp-badge active" style="display:inline-flex;align-items:center;gap:6px">{{ icons.check_circle(14) }} Email OTP Active</span>
+  {% else %}
+  <span class="otp-badge inactive" style="display:inline-flex;align-items:center;gap:6px">{{ icons.warning(14) }} Email OTP not configured &mdash; <a href="{{ url_for('settings') }}" style="color:inherit;text-decoration:underline">Set up</a></span>
+  {% endif %}
+
+  {% if message %}<div class="banner success">{{ message }}</div>{% endif %}
+  {% if error %}<div class="banner error">{{ error }}</div>{% endif %}
+  {% if job_id %}<div class="banner progress" id="progress-banner">Searching for '{{ job_query }}'…</div>{% endif %}
+
+  <div class="card">
+    <form class="inline" method="post" action="{{ url_for('scrape') }}">
+      <input type="text" name="query" placeholder="Trademark / brand name, e.g. Tata" required>
+      <button type="submit">Scrape</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="count">{{ tm_searches|length }} search(es) saved &mdash; click one to see every trademark found</div>
+    {% if tm_searches %}
+    <div class="search-grid">
+      {% for s in tm_searches %}
+      <a class="search-card" href="{{ url_for('trademark_search_detail', query=s['query']) }}">
+        <div class="name">{{ s['query'] }}</div>
+        <div class="meta">{{ s['trademark_count'] }} trademark{{ 's' if s['trademark_count'] != 1 else '' }}</div>
+        <div class="meta">Last scraped: {{ s['last_scraped_at'] }}</div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty">No trademark searches yet. Use the box above to scrape your first one.</div>
+    {% endif %}
+  </div>
+
+{% if job_id %}
+<script>
+(function () {
+  const jobId = {{ job_id | tojson }};
+  const banner = document.getElementById("progress-banner");
+
+  function poll() {
+    fetch("/scrape/status/" + jobId)
+      .then((r) => r.json())
+      .then((job) => {
+        if (job.status === "running") {
+          const total = job.total || "?";
+          const current = job.current ? " — " + job.current : "";
+          banner.textContent = `Scraping '${job.query}': ${job.done}/${total}${current}`;
+          setTimeout(poll, 1000);
+        } else if (job.status === "done") {
+          window.location.href = "/search/" + encodeURIComponent(job.query);
+        } else {
+          location.reload();
+        }
+      })
+      .catch(() => setTimeout(poll, 2000));
+  }
+
+  poll();
+})();
+</script>
+{% endif %}
+{% endblock %}

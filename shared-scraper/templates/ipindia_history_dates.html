@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}Search History — IP India{% endblock %}
+{% block content %}
+
+<a class="back-link" href="{{ url_for('ipindia_index') }}">{{ icons.back(14) }} Back to IP India Scraper</a>
+
+<h1>{{ icons.history(20) }} Search History</h1>
+<p class="subtitle">Combine any filters below — date range, status, reply filed (for Objected), applicant type, contact visibility, agent — to narrow the results.</p>
+
+<form method="get" action="{{ url_for('ipindia_history_dates') }}" class="history-filter-bar">
+  <div class="field-g">
+    <label class="field-label" for="hf-date-from">From</label>
+    <input type="date" id="hf-date-from" name="date_from" value="{{ f_date_from }}">
+  </div>
+  <div class="field-g">
+    <label class="field-label" for="hf-date-to">To</label>
+    <input type="date" id="hf-date-to" name="date_to" value="{{ f_date_to }}">
+  </div>
+  <div class="field-g">
+    <label class="field-label" for="hf-status">Status</label>
+    <select id="hf-status" name="status" onchange="toggleReplyFilter(this.value)">
+      <option value="">Any status</option>
+      {% for s in statuses %}
+      <option value="{{ s.status }}" {{ 'selected' if f_status == s.status }}>{{ s.status }} ({{ s.result_count }})</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="field-g" id="hf-reply-status-group" style="display:{{ 'flex' if f_status == 'Objected' else 'none' }}">
+    <label class="field-label" for="hf-reply-status">Reply Filed?</label>
+    <select id="hf-reply-status" name="reply_status">
+      <option value="">Any</option>
+      {% for r in reply_statuses %}
+      <option value="{{ r }}" {{ 'selected' if f_reply_status == r }}>{{ r }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="field-g">
+    <label class="field-label" for="hf-applicant-type">Applicant Type</label>
+    <select id="hf-applicant-type" name="applicant_type">
+      <option value="">Any type</option>
+      {% for t in applicant_types %}
+      <option value="{{ t }}" {{ 'selected' if f_applicant_type == t }}>{{ t }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="field-g">
+    <label class="field-label" for="hf-visibility">Contact Visibility</label>
+    <select id="hf-visibility" name="contact_visibility">
+      <option value="">Any</option>
+      {% for v in visibility_types %}
+      <option value="{{ v }}" {{ 'selected' if f_contact_visibility == v }}>{{ v }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="field-g">
+    <label class="field-label" for="hf-agent">Agent</label>
+    <input type="text" id="hf-agent" name="agent" list="hf-agent-list"
+           value="{{ f_agent }}" placeholder="Type to search agents…" autocomplete="off">
+    <datalist id="hf-agent-list">
+      {% for a in agents %}
+      <option value="{{ a.agent_name }}">{{ a.agent_name }} ({{ a.result_count }})</option>
+      {% endfor %}
+    </datalist>
+    <a href="{{ url_for('ipindia_history_agents') }}" class="hint" style="text-decoration:none;color:var(--accent)">{{ icons.user(11) }} Browse all agents</a>
+  </div>
+  <div class="field-g" style="justify-content:flex-end">
+    <button type="submit">{{ icons.search(14) }} Apply Filters</button>
+  </div>
+  {% if f_date_from or f_date_to or f_status or f_applicant_type or f_contact_visibility or f_reply_status or f_agent %}
+  <div class="field-g" style="justify-content:flex-end">
+    <a class="btn-secondary" href="{{ url_for('ipindia_history_dates') }}">{{ icons.stop(12) }} Clear</a>
+  </div>
+  {% endif %}
+</form>
+
+<script>
+function toggleReplyFilter(statusValue) {
+  var group = document.getElementById("hf-reply-status-group");
+  group.style.display = statusValue === "Objected" ? "flex" : "none";
+  if (statusValue !== "Objected") {
+    document.getElementById("hf-reply-status").value = "";
+  }
+}
+</script>
+
+<p class="count">{{ total }} result(s){% if total_pages > 1 %} &middot; page {{ page }} of {{ total_pages }}{% endif %}</p>
+
+{% if rows %}
+  <div class="search-grid">
+    {% for s in rows %}
+    <div class="search-card-outer">
+      <a class="search-card" href="{{ url_for('ipindia_result', search_id=s['id'], back=request.full_path) }}">
+        {% if s['logo_filename'] %}
+        <img src="{{ url_for('ipindia_logo', query=s['query'], filename=s['logo_filename']) }}"
+             alt="" class="card-logo">
+        {% endif %}
+        <div class="name">{{ s['proprietor_name'] or s['query'] }}</div>
+        <div class="meta">
+          {% if s['search_type'] == 'appno' %}{{ icons.hash(13) }} App No. {{ s['query'] }}{% elif s['search_type'] == 'appno_discover' %}{{ icons.dice(13) }} Discovered {{ s['query'] }}{% else %}{{ icons.tag(13) }} Brand {{ s['query'] }}{% endif %}
+        </div>
+        {% if s['status'] %}<div class="meta">{{ icons.tag(13) }} {{ s['status'] }}</div>{% endif %}
+        {% if s['reply_status'] %}<div class="meta" style="color:{{ 'var(--success-text)' if s['reply_status'] == 'Replied' else 'var(--error-text)' }}">{{ icons.document(13) }} {{ s['reply_status'] }}</div>{% endif %}
+        {% if s['agent_name'] %}<div class="meta">{{ icons.user(13) }} {{ s['agent_name'] }}</div>{% endif %}
+        <div class="meta">{{ s['scraped_at'] }}</div>
+        {% if s['error'] %}<div class="meta" style="color:var(--error-text);display:flex;align-items:center;gap:6px">{{ icons.warning(13) }} {{ s['error'][:60] }}</div>{% endif %}
+      </a>
+      {% if s['search_type'] in ('appno', 'appno_discover') %}
+      {% if s['is_working'] %}
+      <div class="meta" style="color:var(--accent);font-weight:600;padding:0 16px 14px">{{ icons.document(13) }} Working</div>
+      {% else %}
+      <form method="post" action="{{ url_for('working_start') }}" style="padding:0 16px 14px">
+        <input type="hidden" name="app_no" value="{{ s['query'] }}">
+        <input type="hidden" name="back" value="{{ request.full_path }}">
+        <button type="submit" class="btn-secondary" style="font-size:0.82rem;padding:5px 10px">{{ icons.document(13) }} Start Working</button>
+      </form>
+      {% endif %}
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if total_pages > 1 %}
+  <div style="display:flex;gap:10px;align-items:center;justify-content:center;margin-top:20px">
+    {% set base_args = request.args.to_dict() %}
+    {% if page > 1 %}
+    {% set _ = base_args.update({'page': page - 1}) %}
+    <a class="btn-secondary" href="{{ url_for('ipindia_history_dates', **base_args) }}">Previous</a>
+    {% set _ = base_args.update({'page': page}) %}
+    {% endif %}
+    <span style="color:var(--muted);font-size:0.88rem">Page {{ page }} of {{ total_pages }}</span>
+    {% if page < total_pages %}
+    {% set _ = base_args.update({'page': page + 1}) %}
+    <a class="btn-secondary" href="{{ url_for('ipindia_history_dates', **base_args) }}">Next</a>
+    {% endif %}
+  </div>
+  {% endif %}
+{% else %}
+  <div class="empty">No results match these filters.</div>
+{% endif %}
+
+<style>
+  .history-filter-bar {
+    display: flex; flex-wrap: wrap; gap: 14px;
+    padding: 16px; margin-bottom: 20px;
+    border: 1px solid var(--border); border-radius: 10px;
+    align-items: flex-end;
+  }
+  .history-filter-bar .field-g { display: flex; flex-direction: column; gap: 5px; min-width: 160px; }
+  .history-filter-bar .field-label { font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+  .history-filter-bar input, .history-filter-bar select {
+    padding: 9px 10px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 0.88rem;
+    background: var(--bg); color: var(--text);
+  }
+  .history-filter-bar input:focus, .history-filter-bar select:focus { outline: none; border-color: var(--accent); }
+  .history-filter-bar .hint { font-size: 0.76rem; display: inline-flex; align-items: center; gap: 4px; }
+  .history-filter-bar .hint:hover { text-decoration: underline; }
+
+  .btn-secondary {
+    padding: 10px 16px; border: 1px solid var(--border);
+    border-radius: 8px; background: transparent;
+    color: var(--text); cursor: pointer; font-size: 0.9rem;
+    text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+</style>
+
+{% endblock %}

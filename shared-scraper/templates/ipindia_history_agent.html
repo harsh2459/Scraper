@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}{{ agent_name }} — Search History{% endblock %}
+{% block content %}
+
+<a class="back-link" href="{{ url_for('ipindia_history_dates') }}">{{ icons.back(14) }} Back to search history</a>
+
+<h1>{{ icons.user(20) }} {{ agent_name }}</h1>
+<p class="subtitle">{{ total }} application(s) filed{% if total_pages > 1 %} &middot; page {{ page }} of {{ total_pages }}{% endif %}</p>
+
+<div class="agent-layout">
+  <div class="agent-main">
+    {% if rows %}
+      <div class="search-grid">
+        {% for s in rows %}
+        {# Link by search_id when we have one, otherwise by app_no — the
+           /ipindia/appno/<app_no> route finds or derives a result row from
+           tma_documents so every card opens its detail page. #}
+        {% set _href = url_for('ipindia_result', search_id=s['search_id'], back=request.full_path)
+                       if s['search_id']
+                       else url_for('ipindia_result_by_appno', app_no=s['app_no'], back=request.full_path) %}
+        <a class="search-card" href="{{ _href }}">
+          <div class="name">{{ s['mark_trade_mark'] or s['app_no'] }}</div>
+          <div class="meta">{{ icons.hash(13) }} App No. {{ s['app_no'] }} &middot; {{ s['form_type'] }}</div>
+          {% if s['mark_category'] or s['class_number'] %}
+          <div class="meta">
+            {%- if s['mark_category'] %}{{ s['mark_category'] }}{% endif -%}
+            {%- if s['mark_category'] and s['class_number'] %} &middot; {% endif -%}
+            {%- if s['class_number'] %}Class {{ s['class_number'] }}{% if s['class_description'] %} ({{ s['class_description'] }}){% endif %}{% endif -%}
+          </div>
+          {% endif %}
+          {% if s['applicant_name'] %}<div class="meta">{{ s['applicant_name'] }}</div>{% endif %}
+          {% if s['applicant_mobile'] %}<div class="meta">{{ icons.hash(13) }} {{ s['applicant_mobile'] }}</div>{% endif %}
+          {% if s['applicant_email'] %}<div class="meta">{{ s['applicant_email'] }}</div>{% endif %}
+          <div class="meta">{{ s['scraped_at'] }}</div>
+        </a>
+        {% endfor %}
+      </div>
+
+      {% if total_pages > 1 %}
+      <div style="display:flex;gap:10px;align-items:center;justify-content:center;margin-top:20px">
+        {% if page > 1 %}
+        <a class="btn-secondary" href="{{ url_for('ipindia_history_agent_detail', agent_name=agent_name, page=page-1) }}">Previous</a>
+        {% endif %}
+        <span style="color:var(--muted);font-size:0.88rem">Page {{ page }} of {{ total_pages }}</span>
+        {% if page < total_pages %}
+        <a class="btn-secondary" href="{{ url_for('ipindia_history_agent_detail', agent_name=agent_name, page=page+1) }}">Next</a>
+        {% endif %}
+      </div>
+      {% endif %}
+    {% else %}
+      <div class="empty">No applications found for this agent.</div>
+    {% endif %}
+  </div>
+
+  <aside class="agent-sidebar">
+    {% if profile %}
+    <div class="agent-profile">
+      <h3>{{ icons.user(15) }} Agent Details</h3>
+      <div class="field"><div class="label">Name</div><div class="value">{{ profile['agent_name'] }}</div></div>
+      {% if profile['agent_nature'] %}
+      <div class="field"><div class="label">Nature</div><div class="value">{{ profile['agent_nature'] }}</div></div>
+      {% endif %}
+      {% if profile['agent_address'] %}
+      <div class="field"><div class="label">Address</div><div class="value">{{ profile['agent_address'] }}</div></div>
+      {% endif %}
+      {% if profile['agent_registration_no'] %}
+      <div class="field"><div class="label">Registration No.</div><div class="value">{{ profile['agent_registration_no'] }}</div></div>
+      {% endif %}
+      {% if profile['agent_code'] %}
+      <div class="field"><div class="label">Agent Code</div><div class="value">{{ profile['agent_code'] }}</div></div>
+      {% endif %}
+      <p class="note">Mobile/email are not captured for agents themselves in the source filings (only for applicants) — not available for the agent directly.</p>
+    </div>
+    {% endif %}
+
+    {% if category_breakdown %}
+    <div class="category-breakdown">
+      <h3>{{ icons.tag(15) }} Marks Filed</h3>
+      {% for c in category_breakdown %}
+      <span class="chip">{{ icons.tag(13) }} {{ c['category'] }} &middot; {{ c['n'] }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </aside>
+</div>
+
+<style>
+  .btn-secondary {
+    padding: 10px 16px; border: 1px solid var(--border);
+    border-radius: 8px; background: transparent;
+    color: var(--text); cursor: pointer; font-size: 0.9rem;
+    text-decoration: none; display: inline-block;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  .agent-layout {
+    display: grid; grid-template-columns: 1fr 300px; gap: 24px;
+    align-items: start; margin-top: 16px;
+  }
+  .agent-main { min-width: 0; }
+  .agent-sidebar {
+    display: flex; flex-direction: column; gap: 16px;
+    position: sticky; top: 16px;
+  }
+  @media (max-width: 900px) {
+    .agent-layout { grid-template-columns: 1fr; }
+    .agent-sidebar { position: static; }
+  }
+
+  .agent-profile, .category-breakdown {
+    padding: 16px 18px; border: 1px solid var(--border); border-radius: 10px;
+  }
+  .agent-profile h3, .category-breakdown h3 {
+    margin: 0 0 12px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;
+  }
+  .agent-profile .field { margin-bottom: 12px; }
+  .agent-profile .field:last-of-type { margin-bottom: 0; }
+  .agent-profile .field .label { color: var(--muted); font-size: 0.78rem; margin-bottom: 2px; }
+  .agent-profile .field .value { font-size: 0.95rem; }
+  .agent-profile .note {
+    color: var(--muted); font-size: 0.8rem;
+    margin: 12px 0 0; font-style: italic;
+  }
+
+  .category-breakdown { display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start; }
+  .category-breakdown .chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 12px; border: 1px solid var(--border); border-radius: 999px;
+    font-size: 0.82rem; color: var(--text);
+  }
+</style>
+
+{% endblock %}

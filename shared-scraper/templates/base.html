@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{% block title %}Data Scraper{% endblock %}</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f6f7f9;
+    --card-bg: #ffffff;
+    --text: #1a1a1a;
+    --muted: #666;
+    --border: #e2e4e8;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --success-bg: #e7f7ee;
+    --success-text: #0f6b3a;
+    --error-bg: #fdecec;
+    --error-text: #a3242a;
+    --row-hover: #f0f3ff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161a;
+      --card-bg: #1d2026;
+      --text: #e7e9ec;
+      --muted: #9aa0aa;
+      --border: #2c303a;
+      --accent: #5b8def;
+      --accent-hover: #7ba4f2;
+      --success-bg: #113322;
+      --success-text: #6fd39a;
+      --error-bg: #3a1616;
+      --error-text: #f28b8b;
+      --row-hover: #232838;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+  h1 { font-size: 1.5rem; margin-bottom: 4px; }
+  h2 { font-size: 1.2rem; margin-bottom: 4px; }
+  p.subtitle { color: var(--muted); margin-top: 0; margin-bottom: 24px; font-size: 0.9rem; }
+  a.back-link { color: var(--accent); text-decoration: none; font-size: 0.85rem; display: inline-block; margin-bottom: 16px; }
+  a.back-link:hover { text-decoration: underline; }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  form.inline { display: flex; gap: 10px; flex-wrap: wrap; }
+  input[type=text] {
+    flex: 1;
+    min-width: 220px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: var(--bg);
+    color: var(--text);
+  }
+  button {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    background: var(--accent);
+    color: white;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+  button:hover { background: var(--accent-hover); }
+  button.secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .banner {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+  }
+  .banner.success { background: var(--success-bg); color: var(--success-text); }
+  .banner.error { background: var(--error-bg); color: var(--error-text); }
+  .banner.progress { background: var(--row-hover); color: var(--text); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    max-width: 260px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  th { color: var(--muted); font-weight: 600; position: sticky; top: 0; background: var(--card-bg); }
+  tr.clickable { cursor: pointer; }
+  tr.clickable:hover td { background: var(--row-hover); }
+  .table-scroll { overflow-x: auto; }
+  .status-active { color: var(--success-text); font-weight: 600; }
+  .status-other { color: var(--muted); }
+  a.plain-link { color: var(--accent); text-decoration: none; }
+  a.plain-link:hover { text-decoration: underline; }
+  .empty { color: var(--muted); padding: 20px; text-align: center; }
+  .count { color: var(--muted); font-size: 0.85rem; margin-bottom: 10px; }
+  .search-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+  .search-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    background: var(--bg);
+    text-decoration: none;
+    color: var(--text);
+    display: block;
+  }
+  .search-card:hover { background: var(--row-hover); }
+  .search-card .name { font-weight: 600; margin-bottom: 6px; word-break: break-word; }
+  .search-card .meta { color: var(--muted); font-size: 0.8rem; }
+  /* Wraps a .search-card <a> plus a sibling action (e.g. the "Start
+     Working" form on Search History) so the card's own border/background
+     spans both — needed because a <form><button> can't legally nest inside
+     the <a> without breaking click semantics in some browsers. */
+  .search-card-outer {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+    overflow: hidden;
+  }
+  .search-card-outer .search-card { border: none; border-radius: 0; }
+  .search-card-outer .search-card:hover { background: var(--row-hover); }
+  .card-logo {
+    display: block;
+    max-width: 100%;
+    max-height: 60px;
+    margin-bottom: 8px;
+    object-fit: contain;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px;
+  }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 32px; }
+  .detail-field .label { color: var(--muted); font-size: 0.8rem; margin-bottom: 2px; }
+  .detail-field .value { font-size: 1rem; }
+  @media (max-width: 600px) { .detail-grid { grid-template-columns: 1fr; } }
+  .filter-bar { display: flex; flex-direction: column; gap: 12px; }
+  .filter-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  select {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: var(--bg);
+    color: var(--text);
+  }
+  /* ── Top nav ── */
+  .top-nav {
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .top-nav .brand {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .top-nav .nav-links { display: flex; align-items: center; gap: 16px; }
+  .top-nav .nav-links a {
+    color: var(--muted); text-decoration: none;
+    font-size: 0.88rem;
+    transition: color 0.15s;
+  }
+  .top-nav .nav-links a:hover { color: var(--accent); }
+  .otp-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 0.78rem; font-weight: 600;
+    padding: 3px 9px; border-radius: 20px;
+  }
+  .otp-badge.active   { background: var(--success-bg); color: var(--success-text); }
+  .otp-badge.inactive { background: var(--error-bg);   color: var(--error-text); }
+
+  /* ── Pool/manual auth-mode toggle — shared by auto_discover.html,
+       ipindia.html, cluster_expand.html ── */
+  .auth-mode-toggle { display: flex; gap: 6px; }
+  .auth-tab {
+    padding: 9px 12px; border-radius: 8px; font-size: 0.85rem;
+    border: 1px solid var(--border); background: transparent; color: var(--muted);
+    cursor: pointer; white-space: nowrap;
+  }
+  .auth-tab:hover { border-color: var(--accent); color: var(--text); }
+  .auth-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+</style>
+</head>
+<body>
+{% import "_icons.html" as icons %}
+<nav class="top-nav">
+  <a class="brand" href="/">{{ icons.bolt(16) }} Datascraper</a>
+  <div class="nav-links">
+    <a href="/">Trademarks</a>
+    <a href="/ipindia">{{ icons.bank(14) }} IP India</a>
+    <a href="/discover">{{ icons.dice(14) }} Auto Discover</a>
+    <a href="/cluster">{{ icons.tag(14) }} Cluster Expand</a>
+    <a href="/working">{{ icons.document(14) }} Working</a>
+    <a href="/settings">{{ icons.gear(14) }} Settings</a>
+  </div>
+</nav>
+<div class="wrap">
+{% block content %}{% endblock %}
+</div>
+<script>
+function setAuthMode(btn, mode) {
+  var form = btn.closest(".auth-mode-form");
+  form.querySelector(".auth-mode-input").value = mode;
+  form.querySelectorAll(".auth-tab").forEach(function(t) { t.classList.remove("active"); });
+  btn.classList.add("active");
+
+  var emailGroup = form.querySelector(".auth-manual-email");
+  var emailInput = emailGroup ? emailGroup.querySelector("input[name='email']") : null;
+  if (!emailGroup) return;
+  if (mode === "manual") {
+    emailGroup.style.display = emailGroup.classList.contains("ip-row") ? "grid" : "flex";
+    if (emailInput) emailInput.required = true;
+  } else {
+    emailGroup.style.display = "none";
+    if (emailInput) emailInput.required = false;
+  }
+}
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

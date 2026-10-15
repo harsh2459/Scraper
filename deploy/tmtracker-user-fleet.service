@@ -1,0 +1,21 @@
+[Unit]
+Description=TM Tracker user API with fleet handoff
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=tmtracker
+Group=tmtracker
+WorkingDirectory=/opt/tmtracker/tm_manager
+EnvironmentFile=/etc/tmtracker/user-fleet.env
+ExecStart=/opt/tmtracker/.venv/bin/python /opt/tmtracker/tm_manager/app.py
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/opt/tmtracker/tm_manager /var/lib/tmtracker /var/log/tmtracker
+
+[Install]
+WantedBy=multi-user.target

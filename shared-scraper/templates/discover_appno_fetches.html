@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}App No. {{ app_no }} — All Fetches{% endblock %}
+{% block content %}
+
+<a class="back-link" href="{{ url_for('discover_series_detail', series=series) }}">{{ icons.back(14) }} Back to Series {{ series }}</a>
+
+<h1>{{ icons.hash(20) }} App No. {{ app_no }}</h1>
+<p class="subtitle">
+  This application number has been scraped <strong>{{ fetches|length }}</strong> time(s).
+  Each fetch below is a separate scrape, newest first.
+</p>
+
+<div class="card">
+  <div class="table-responsive" style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:0.9rem">
+      <thead>
+        <tr style="text-align:left;border-bottom:1px solid var(--border)">
+          <th style="padding:8px 10px">Fetched At</th>
+          <th style="padding:8px 10px">Trade Mark</th>
+          <th style="padding:8px 10px">Status</th>
+          <th style="padding:8px 10px">Search Type</th>
+          <th style="padding:8px 10px">Email Used</th>
+          <th style="padding:8px 10px"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in fetches %}
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:8px 10px">{{ f.scraped_at.strftime('%Y-%m-%d') }}</td>
+          <td style="padding:8px 10px;font-weight:600">{{ f.trade_mark or "—" }}</td>
+          <td style="padding:8px 10px">{{ f.status or "—" }}</td>
+          <td style="padding:8px 10px;color:var(--muted)">
+            {% if f.search_type == 'appno_discover' %}{{ icons.dice(13) }} Auto Discover{% else %}{{ icons.hash(13) }} Manual{% endif %}
+          </td>
+          <td style="padding:8px 10px;color:var(--muted)">{{ f.email_used or "—" }}</td>
+          <td style="padding:8px 10px">
+            <a href="{{ url_for('ipindia_result', search_id=f.id, back=request.full_path) }}" class="plain-link">{{ icons.hash(13) }} View</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

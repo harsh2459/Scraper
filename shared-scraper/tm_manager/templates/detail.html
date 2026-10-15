@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+{% block title %}#{{ tm.app_no }} — {% endblock %}
+{% block content_class %}no-pad{% endblock %}
+
+{% block extra_css %}{% endblock %}
+
+{% block topbar %}{% endblock %}
+
+{% block content %}
+<div id="detailBody">
+  <style>
+  #detailBody{display:flex;flex-direction:column;height:100%;min-height:0;background:#fff;}
+  .det-top{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:8px 16px;border-bottom:1px solid var(--border);flex-shrink:0;
+    background:var(--panel);flex-wrap:wrap;gap:8px;
+  }
+  .det-top-left{display:flex;align-items:center;gap:12px;}
+  .det-app-no{font-size:13.5px;font-weight:600;color:var(--blue);}
+  .det-assign{font-size:12px;color:var(--fg);background:none;border:none;cursor:pointer;padding:0;}
+  .det-assign:hover{text-decoration:underline;}
+
+  .det-top-right{display:flex;gap:8px;align-items:center;}
+  .btn-sm{
+    border:1px solid var(--border2);border-radius:5px;padding:4px 10px;
+    font-size:12px;font-weight:500;background:var(--panel);color:var(--fg);
+    display:inline-flex;align-items:center;gap:5px;cursor:pointer;
+  }
+  .btn-sm:hover{background:var(--muted);}
+  .btn-sm svg{width:12px;height:12px;}
+  .close-x{
+    width:26px;height:26px;border-radius:5px;border:1px solid var(--border2);
+    display:flex;align-items:center;justify-content:center;background:var(--panel);
+    flex-shrink:0;font-size:16px;color:var(--muted-fg);cursor:pointer;
+    text-decoration:none;line-height:1;
+  }
+  .close-x:hover{background:var(--muted);color:var(--fg);}
+
+  .det-scroll{overflow-y:auto;flex:1;min-height:0;padding:16px 20px;}
+
+  .notes-bar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:8px 12px;background:#F9FAFB;border:1px solid var(--border);
+    border-radius:5px;margin-bottom:18px;font-size:12.5px;color:var(--fg);
+    cursor:pointer;font-weight:500;
+  }
+  .notes-bar:hover{background:#F3F4F6;}
+
+  .det-hero{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;gap:16px;}
+  .det-hero h2{font-size:18px;font-weight:600;margin:0 0 8px 0;color:#111827;}
+  .logo-box img{max-width:140px;max-height:80px;object-fit:contain;display:block;}
+  .swatch-big{
+    width:60px;height:60px;border-radius:8px;background:#1F2937;color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:22px;
+    font-weight:700;flex-shrink:0;
+  }
+
+  .det-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;
+    padding:16px 0;border-top:1px solid var(--border);
+  }
+  .dfield{display:flex;flex-direction:column;gap:3px;}
+  .dfield .lbl{font-size:11.5px;color:#6B7280;line-height:1.2;}
+  .dfield .val{font-size:13px;color:#111827;line-height:1.4;}
+  .dfield .val a{color:var(--blue);text-decoration:none;}
+  .dfield .val a:hover{text-decoration:underline;}
+
+  .det-section{padding:16px 0;border-top:1px solid var(--border);}
+  .det-section h4{
+    font-size:12.5px;font-weight:600;color:#111827;
+    text-transform:uppercase;letter-spacing:0.03em;margin:0 0 8px 0;
+  }
+  .det-section .sub-lbl{font-size:11.5px;color:#6B7280;margin-bottom:2px;margin-top:8px;}
+  .det-section .sub-val{font-size:13px;color:#374151;line-height:1.5;}
+  .det-section .sub-val a{color:var(--blue);text-decoration:none;}
+  .det-section .sub-val a:hover{text-decoration:underline;}
+  
+  .class-text{font-size:13px;line-height:1.6;color:#374151;}
+  
+  .doc-row-d{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    padding:6px 0;border-bottom:1px solid var(--border2);
+  }
+  .doc-row-d:last-child{border-bottom:none;}
+  .doc-row-d a{color:var(--blue);font-size:12.5px;text-decoration:none;line-height:1.4;}
+  .doc-row-d a:hover{text-decoration:underline;}
+  .doc-date{font-size:11.5px;color:#6B7280;white-space:nowrap;margin-left:12px;}
+
+  @media (max-width:900px){.det-grid{grid-template-columns:1fr;}}
+  </style>
+  <div class="det-top">
+    <div class="det-top-left">
+      <span class="det-app-no">#{{ tm.app_no }}</span>
+      <button class="det-assign" onclick="alert('Assign this application to a client.')">Assign Client</button>
+    </div>
+    <div class="det-top-right">
+      <button class="btn-sm" onclick="window.print()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4V2h8v2M4 11H2V6h12v5h-2M4 9h8v5H4z"/></svg>
+        Print
+      </button>
+      <form method="post" action="{{ url_for('trademark_retry', id_=tm.id) }}" style="margin:0;">
+        <button type="submit" class="btn-sm">
+          Live Refresh ↻
+        </button>
+      </form>
+      <a class="close-x" href="{{ url_for('trademarks_list') }}" onclick="if(typeof closeDetail==='function'){closeDetail();return false;}">×</a>
+    </div>
+  </div>
+
+  <div class="det-scroll">
+    <div class="notes-bar" onclick="const b=this.nextElementSibling;b.style.display=b.style.display==='block'?'none':'block';">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h12M2 12h8"/></svg>
+        Notes
+      </div>
+      <span>+</span>
+    </div>
+    <div style="display:none;margin-bottom:18px;">
+      <textarea style="width:100%;min-height:80px;border:1px solid var(--border2);border-radius:5px;padding:8px 10px;font-family:inherit;font-size:12.5px;color:var(--fg);resize:vertical;" placeholder="Write notes here…"></textarea>
+    </div>
+
+    <div class="det-hero">
+      <div>
+        <h2>{{ data.trade_mark if data and data.trade_mark else (tm.label or tm.app_no) }}</h2>
+        <div>
+          {% set st = data.status if data and data.status else tm.status %}
+          <span class="pill {{ st|status_class }}"><span class="dot"></span>{{ st }}</span>
+        </div>
+      </div>
+      {% if data and data.has_logo %}
+      <div class="logo-box">
+        <img src="{{ url_for('trademark_logo', id_=tm.id) }}" alt=""
+             data-fallback="{{ ((data.trade_mark if data and data.trade_mark else (tm.label or tm.app_no)) or '?')[:1]|upper }}"
+             onerror="this.parentElement.className='swatch-big';this.parentElement.textContent=this.dataset.fallback;">
+      </div>
+      {% elif (data.trade_mark if data and data.trade_mark else (tm.label or tm.app_no)) %}
+        <!-- No logo box if we have a word mark and it's not a device mark -->
+      {% else %}
+      <div class="swatch-big">{{ ((data.trade_mark if data and data.trade_mark else (tm.label or tm.app_no)) or '?')[:1]|upper }}</div>
+      {% endif %}
+    </div>
+
+    <div class="det-grid">
+      <div class="dfield">
+        <div class="lbl">Application No.</div>
+        <div class="val"><a href="https://ipindiaonline.gov.in/tmrpublicsearch/frmmain.aspx" target="_blank" rel="noopener">{{ tm.app_no }}</a></div>
+      </div>
+      <div class="dfield">
+        <div class="lbl">Class</div>
+        <div class="val">{{ (data.class_number if data else None) or tm.class_number or '—' }}</div>
+      </div>
+      
+      <div class="dfield">
+        <div class="lbl">Status</div>
+        <div class="val">{% set st = data.status if data and data.status else None %}{% if st %}<a href="#" style="color:#16A34A;">{{ st }}</a>{% else %}—{% endif %}</div>
+      </div>
+      <div class="dfield">
+        <div class="lbl">User Detail</div>
+        <div class="val">{{ (data.use_statement if data else None) or 'Proposed to be used' }}</div>
+      </div>
+
+      <div class="dfield">
+        <div class="lbl">Application Date</div>
+        <div class="val">{{ (data.application_date if data else None) or tm.application_date or '—' }}</div>
+      </div>
+      <div class="dfield">
+        <div class="lbl">Office</div>
+        <div class="val">{{ (data.registry_office if data else None) or '—' }}</div>
+      </div>
+
+      <div class="dfield">
+        <div class="lbl">State</div>
+        <div class="val">{{ (data.state if data else None) or '—' }}</div>
+      </div>
+      <div class="dfield">
+        <div class="lbl">Category</div>
+        <div class="val"><a href="#">TRADE MARK</a></div>
+      </div>
+
+      <div class="dfield">
+        <div class="lbl">Type</div>
+        <div class="val">{{ (data.mark_category if data else None) or (data.tm_type if data else None) or '—' }}</div>
+      </div>
+      <div class="dfield">
+        <div class="lbl">Renewal date</div>
+        <div class="val">{{ (data.valid_upto if data else None) or '—' }}</div>
+      </div>
+
+      <div class="dfield">
+        <div class="lbl">Filing Mode</div>
+        <div class="val">{{ (data.application_filed_as if data else None) or 'e-Filing' }}</div>
+      </div>
+      <div class="dfield">
+        <div class="lbl">Publication Date</div>
+        <div class="val">{{ (data.publication_date if data else None) or '—' }}</div>
+      </div>
+    </div>
+
+    {% if data and data.applicant_name %}
+    <div class="det-section">
+      <h4>OWNER</h4>
+      <div class="sub-val"><a href="#">{{ data.applicant_name }} ↗</a></div>
+      {% if data.applicant_address %}
+      <div class="sub-lbl">Owner Address</div>
+      <div class="sub-val">{{ data.applicant_address }}</div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if data and data.agent_name %}
+    <div class="det-section">
+      <h4>ATTORNEY</h4>
+      <div class="sub-val"><a href="#">{{ data.agent_name }}{% if data.agent_registration_no %}[{{ data.agent_registration_no }}]{% endif %} ↗</a></div>
+      {% if data.agent_address %}
+      <div class="sub-lbl">Attorney Address</div>
+      <div class="sub-val">{{ data.agent_address }}</div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if data and data.class_description %}
+    <div class="det-section">
+      <h4>Class Detail</h4>
+      <div class="class-text">[CLASS : {{ data.class_number or '—' }}] {{ data.class_description }}</div>
+    </div>
+    {% endif %}
+
+    <div class="det-section">
+      <h4>UPLOADED DOCUMENTS</h4>
+      {% if documents %}
+        {% for doc in documents %}
+        <div class="doc-row-d">
+          <a href="{{ url_for('trademark_document', id_=tm.id, filename=doc) }}" target="_blank">{{ doc }}</a>
+          <div class="doc-date">{{ (data.application_date if data else None) or '—' }}</div>
+        </div>
+        {% endfor %}
+      {% else %}
+      <p style="font-size:12.5px;color:var(--muted-fg);">No documents uploaded.</p>
+      {% endif %}
+    </div>
+
+    {% if data and data.correspondence %}
+    <div class="det-section">
+      <h4>CORRESPONDENCE ({{ data.correspondence|length }})</h4>
+      {% for c in data.correspondence %}
+      {% set corr_file = (c.document_path or '').split('/')[-1].split('\\')[-1] %}
+      <div class="doc-row-d">
+        {% if corr_file %}
+        <a href="{{ url_for('trademark_notice', id_=tm.id, kind='correspondence', filename=corr_file) }}" target="_blank">{{ c.subject or 'Notice' }}</a>
+        {% else %}
+        <span style="font-size:12.5px;color:#374151;">{{ c.subject or 'Notice' }}</span>
+        {% endif %}
+        <div class="doc-date">{{ c.despatch_date or c.corres_date or '—' }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if data and data.reminders %}
+    <div class="det-section">
+      <h4>REMINDERS ({{ data.reminders|length }})</h4>
+      {% for r in data.reminders %}
+      <div class="doc-row-d">
+        <span style="font-size:12.5px;color:#374151;">{{ r.subject or 'Reminder' }}</span>
+        <div class="doc-date">{{ r.despatch_date or r.corres_date or '—' }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if tm.status == 'error' %}
+    <div class="det-section">
+      <h4>Fetch Error</h4>
+      <p style="font-size:12.5px;color:var(--s-red);margin-bottom:8px;">{{ tm.last_error or 'Unknown error.' }}</p>
+      <form method="post" action="{{ url_for('trademark_retry', id_=tm.id) }}">
+        <button type="submit" class="btn btn-primary" style="font-size:12px;">Retry fetch</button>
+      </form>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

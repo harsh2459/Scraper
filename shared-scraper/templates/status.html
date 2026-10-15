@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}Worker Status — Datascraper{% endblock %}
+{% block content %}
+
+<style>
+  .spinner {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2.5px solid var(--border); border-top-color: var(--accent);
+    animation: spin 0.8s linear infinite; flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<h1>{{ icons.bolt(20) }} Worker Status</h1>
+<p class="subtitle">
+  Machine: <strong>{{ machine_key }}</strong>
+  &middot; Fleet mode: {% if fleet_mode_enabled %}<span class="status-active">on</span>{% else %}<span class="status-other">off</span>{% endif %}
+  &middot; Live — updates automatically
+</p>
+
+{% if fleet_today %}
+<div class="card" id="fleet-today-card">
+  <h2>{{ icons.bolt(16) }} Today's fleet progress</h2>
+  <p class="count" id="fleet-today-count">
+    <span class="stat-fleet-done">{{ fleet_today.done }}</span> done
+    &middot; <span class="stat-fleet-pending">{{ fleet_today.pending }}</span> left
+    &middot; <span class="stat-fleet-failed">{{ fleet_today.failed }}</span> failed
+    &middot; {{ fleet_today.total }} assigned today
+  </p>
+  <div style="background:var(--border);border-radius:6px;overflow:hidden;height:10px;margin-top:10px">
+    <div id="fleet-today-bar" style="background:var(--success-text);height:100%;width:0%"></div>
+  </div>
+</div>
+{% endif %}
+
+<div class="count" id="worker-accounts-count" style="display:none"></div>
+
+<template id="worker-account-card-template">
+  <div class="card worker-account">
+    <h2 class="acct-email">account@example.com</h2>
+    <div class="banner progress acct-banner">
+      <div style="display:flex;align-items:center;gap:10px;font-weight:600">
+        <div class="spinner acct-spinner"></div>
+        <span class="acct-phase">Fetching…</span>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:28px;flex-wrap:wrap;margin:16px 0">
+      <div>
+        <div class="field-label">Success</div>
+        <div class="stat-success" style="font-size:1.4rem;font-weight:700;color:var(--success-text)">0</div>
+      </div>
+      <div>
+        <div class="field-label">Failure</div>
+        <div class="stat-failure" style="font-size:1.4rem;font-weight:700;color:var(--error-text)">0</div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<div id="worker-accounts-container"></div>
+
+<div class="card" id="worker-empty-card">
+  <p class="empty">No activity yet this run — waiting for the first batch to start. This page updates automatically once one does.</p>
+</div>
+
+<div class="card">
+  <h2>Warm pool</h2>
+  <p class="count">
+    {{ warm_health.ready }}/{{ warm_health.total }} ready
+    &middot; {{ warm_health.claimed }} claimed
+    &middot; {{ warm_health.logging_in }} logging in
+    {% if not warm_health.enabled %}&middot; disabled{% endif %}
+  </p>
+  {% if warm_slots %}
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Account</th>
+          <th>Status</th>
+          <th>Priority</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for slot in warm_slots %}
+        <tr>
+          <td>{{ slot.email }}</td>
+          <td>{{ slot.status }}</td>
+          <td>{{ 'yes' if slot.is_priority else '' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="empty">Warm pool disabled or empty.</p>
+  {% endif %}
+</div>
+
+<script>
+(function(){
+  var container = document.getElementById("worker-accounts-container");
+  var countEl   = document.getElementById("worker-accounts-count");
+  var emptyCard = document.getElementById("worker-empty-card");
+  var template  = document.getElementById("worker-account-card-template");
+  var cards     = {};  // email -> card element
+
+  function getCard(email){
+    if (cards[email]) return cards[email];
+    var card = template.content.firstElementChild.cloneNode(true);
+    card.querySelector(".acct-email").textContent = email;
+    container.appendChild(card);
+    cards[email] = card;
+    return card;
+  }
+
+  function renderFleetToday(fleetToday){
+    var card = document.getElementById("fleet-today-card");
+    if (!fleetToday) {
+      if (card) card.style.display = "none";
+      return;
+    }
+    if (card) card.style.display = "";
+    var countEl = document.getElementById("fleet-today-count");
+    if (countEl) {
+      countEl.querySelector(".stat-fleet-done").textContent = fleetToday.done;
+      countEl.querySelector(".stat-fleet-pending").textContent = fleetToday.pending;
+      countEl.querySelector(".stat-fleet-failed").textContent = fleetToday.failed;
+    }
+    var bar = document.getElementById("fleet-today-bar");
+    if (bar) {
+      var pct = fleetToday.total > 0 ? Math.round((fleetToday.done / fleetToday.total) * 100) : 0;
+      bar.style.width = pct + "%";
+    }
+  }
+
+  function render(data){
+    renderFleetToday(data.fleet_today);
+    var inflight = data.sessions.inflight || {};
+    var counts   = data.sessions.counts || {};
+    var emails = Object.keys(counts);
+    Object.keys(inflight).forEach(function(e){ if (emails.indexOf(e) === -1) emails.push(e); });
+
+    if (emails.length === 0) {
+      emptyCard.style.display = "";
+      countEl.style.display = "none";
+      return;
+    }
+    emptyCard.style.display = "none";
+    countEl.style.display = "";
+    var activeCount = Object.keys(inflight).length;
+    countEl.textContent = activeCount + " account(s) fetching now, " + emails.length + " active this run";
+
+    emails.forEach(function(email){
+      var card = getCard(email);
+      var c = counts[email] || {success: 0, failure: 0};
+      card.querySelector(".stat-success").textContent = c.success;
+      card.querySelector(".stat-failure").textContent = c.failure;
+
+      var banner = card.querySelector(".acct-banner");
+      var phase  = card.querySelector(".acct-phase");
+      var spinner = card.querySelector(".acct-spinner");
+      var info = inflight[email];
+      if (info) {
+        banner.className = "banner progress acct-banner";
+        spinner.style.display = "";
+        phase.textContent = "Fetching " + (info.app_no || "…") + " (" + info.elapsed_secs + "s)";
+      } else {
+        banner.className = "banner success acct-banner";
+        spinner.style.display = "none";
+        phase.textContent = "Idle";
+      }
+    });
+  }
+
+  function poll(){
+    fetch("/api/worker-status")
+      .then(function(r){ return r.json(); })
+      .then(render)
+      .catch(function(){ /* ignore, retry next tick */ })
+      .finally(function(){ setTimeout(poll, 3000); });
+  }
+  poll();
+})();
+</script>
+
+{% endblock %}

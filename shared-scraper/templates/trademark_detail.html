@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ t['name'] }} — Trademark{% endblock %}
+{% block content %}
+  <a class="back-link" href="{{ url_for('trademark_search_detail', query=t['query']) }}">&larr; Back to '{{ t['query'] }}' results</a>
+  <h1>{{ t['name'] or t['query'] }}</h1>
+  {% if t['profile_url'] %}<p class="subtitle"><a class="plain-link" href="{{ t['profile_url'] }}" target="_blank" rel="noopener">View on quickcompany.in</a></p>{% endif %}
+
+  {% if t['error'] %}
+  <div class="banner error">{{ t['error'] }}</div>
+  {% else %}
+  <div class="card">
+    <div class="detail-grid">
+      <div class="detail-field"><div class="label">Application ID</div><div class="value">{{ t['application_id'] or '—' }}</div></div>
+      <div class="detail-field"><div class="label">Status</div><div class="value">{{ t['status'] or '—' }}</div></div>
+      <div class="detail-field"><div class="label">Sub Status</div><div class="value">{{ t['sub_status'] or '—' }}</div></div>
+      <div class="detail-field"><div class="label">Date of Application</div><div class="value">{{ t['date_of_application'] or '—' }}</div></div>
+      <div class="detail-field"><div class="label">Classes</div><div class="value">{{ t['classes'] or '—' }}</div></div>
+      <div class="detail-field"><div class="label">Type</div><div class="value">{{ t['type'] or '—' }}</div></div>
+      <div class="detail-field"><div class="label">State</div><div class="value">{{ t['state'] or '—' }}</div></div>
+      <div class="detail-field"><div class="label">Country</div><div class="value">{{ t['country'] or '—' }}</div></div>
+      <div class="detail-field"><div class="label">Filing Mode</div><div class="value">{{ t['filing_mode'] or '—' }}</div></div>
+      <div class="detail-field"><div class="label">IP Office</div><div class="value">{{ t['ip_office'] or '—' }}</div></div>
+      <div class="detail-field"><div class="label">Used Since</div><div class="value">{{ t['used_since'] or '—' }}</div></div>
+      <div class="detail-field"><div class="label">Valid / Upto</div><div class="value">{{ t['valid_upto'] or '—' }}</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Proprietor</h2>
+    <p>{{ t['proprietor'] or 'None listed' }}</p>
+    <h2>Agent</h2>
+    <p>{{ t['agent'] or 'None listed' }}</p>
+    <h2>Description</h2>
+    <p>{{ t['description'] or 'None listed' }}</p>
+    <h2>PR Details</h2>
+    <p>{{ t['pr_details'] or 'None listed' }}</p>
+  </div>
+  {% endif %}
+  <div class="card">
+    <div class="detail-field"><div class="label">Scraped At</div><div class="value">{{ t['scraped_at'] }}</div></div>
+  </div>
+{% endblock %}

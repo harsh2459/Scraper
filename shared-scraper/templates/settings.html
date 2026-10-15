@@ -1,0 +1,514 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}Email OTP Settings — Datascraper{% endblock %}
+{% block content %}
+
+<a class="back-link" href="{{ url_for('index') }}">← Back to scraper</a>
+<h1>{{ icons.gear(20) }} Email OTP Settings</h1>
+<p class="subtitle">
+  Configure your email credentials so the scraper can automatically read OTP
+  verification codes from your inbox — no manual copy-paste required.
+</p>
+
+{% if saved %}
+<div class="banner success" id="saved-banner" style="display:flex;align-items:center;gap:8px">
+  {{ icons.check_circle(15) }} Settings saved successfully. Email OTP automation is now active.
+</div>
+{% endif %}
+{% if error %}
+<div class="banner error">{{ error }}</div>
+{% endif %}
+
+<!-- ── How it works ── -->
+<div class="card info-card">
+  <h2>How it works</h2>
+  <div class="steps">
+    <div class="step">
+      <span class="step-num">1</span>
+      <div>
+        <strong>Scraper hits the site</strong>
+        <p>When quickcompany.in asks for email verification, the scraper detects the OTP page automatically.</p>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-num">2</span>
+      <div>
+        <strong>Inbox is polled</strong>
+        <p>Your inbox is checked every few seconds via IMAP (using your app password — <em>not</em> your real password).</p>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-num">3</span>
+      <div>
+        <strong>OTP is extracted &amp; submitted</strong>
+        <p>The code is read from the email body and submitted back to the site automatically.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Credentials form ── -->
+<div class="card">
+  <h2>Email Credentials</h2>
+
+  <div class="provider-tabs" id="provider-tabs">
+    <button type="button" class="tab-btn active" onclick="setProvider('gmail', this)"
+            id="tab-gmail">Gmail</button>
+    <button type="button" class="tab-btn" onclick="setProvider('outlook', this)"
+            id="tab-outlook">Outlook / Hotmail</button>
+    <button type="button" class="tab-btn" onclick="setProvider('yahoo', this)"
+            id="tab-yahoo">Yahoo</button>
+    <button type="button" class="tab-btn" onclick="setProvider('custom', this)"
+            id="tab-custom">Custom IMAP</button>
+  </div>
+
+  <div class="provider-hint" id="provider-hint">
+    <strong>Gmail setup:</strong>
+    Enable 2-Step Verification → go to
+    <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer">
+      myaccount.google.com/apppasswords
+    </a>
+    → create an App Password for "Mail" → paste it below.
+  </div>
+
+  <form method="post" action="{{ url_for('settings_save') }}" id="settings-form">
+
+    <div class="field-group">
+      <label for="email_address">Email Address</label>
+      <input type="email" id="email_address" name="email_address"
+             value="{{ email_address }}" placeholder="you@gmail.com" required
+             autocomplete="username">
+    </div>
+
+    <div class="field-group">
+      <label for="app_password">App Password</label>
+      <div class="pw-wrap">
+        <input type="password" id="app_password" name="app_password"
+               value="{{ masked_pw }}" placeholder="xxxx xxxx xxxx xxxx"
+               autocomplete="current-password">
+        <button type="button" class="pw-toggle" id="pw-toggle-btn"
+                onclick="togglePassword()" title="Show / hide password">{{ icons.eye(16) }}</button>
+      </div>
+      <small class="hint">Use an App Password, <strong>not</strong> your main account password.</small>
+    </div>
+
+    <div class="field-group" id="imap-server-group">
+      <label for="imap_server">IMAP Server</label>
+      <input type="text" id="imap_server" name="imap_server"
+             value="{{ imap_server }}" placeholder="imap.gmail.com">
+    </div>
+
+    <div class="field-row">
+      <div class="field-group">
+        <label for="imap_port">IMAP Port</label>
+        <input type="number" id="imap_port" name="imap_port"
+               value="{{ imap_port }}" placeholder="993" min="1" max="65535">
+      </div>
+      <div class="field-group">
+        <label for="otp_timeout">OTP Wait Timeout (seconds)</label>
+        <input type="number" id="otp_timeout" name="otp_timeout"
+               value="{{ otp_timeout }}" placeholder="60" min="10" max="300">
+      </div>
+    </div>
+
+    <details class="advanced-section">
+      <summary>Advanced Filters <span class="optional-tag">optional</span></summary>
+      <div class="advanced-body">
+        <div class="field-group">
+          <label for="sender_filter">Filter by Sender (contains)</label>
+          <input type="text" id="sender_filter" name="sender_filter"
+                 value="{{ sender_filter }}" placeholder="e.g. quickcompany.in">
+          <small class="hint">Only read OTPs from emails whose From address contains this text.</small>
+        </div>
+        <div class="field-group">
+          <label for="subject_filter">Filter by Subject (contains)</label>
+          <input type="text" id="subject_filter" name="subject_filter"
+                 value="{{ subject_filter }}" placeholder="e.g. OTP or verification">
+          <small class="hint">Only read OTPs from emails whose subject contains this text.</small>
+        </div>
+      </div>
+    </details>
+
+    <div class="form-actions">
+      <button type="submit" id="save-btn">Save Settings</button>
+      <button type="button" id="test-btn" class="secondary" onclick="runConnectionTest()">
+        Test Connection
+      </button>
+    </div>
+
+  </form>
+
+  <!-- Test result area -->
+  <div id="test-result" class="test-result" style="display:none"></div>
+</div>
+
+<!-- ── Email Pool (multiple IMAP inboxes for automatic Auto Discover login) ── -->
+<div class="card">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+    <h2 style="margin:0">Email Pool</h2>
+    <button type="button" class="pool-add-btn" onclick="togglePoolAddForm()" title="Add another account">
+      {{ icons.plus(16) }} Add Account
+    </button>
+  </div>
+  <p style="color:var(--muted);font-size:0.88rem;margin:8px 0 0">
+    Add multiple email accounts (e.g. several Yahoo inboxes) here so Auto Discover can pick a
+    free one automatically for each run — no manual email entry, no manual OTP typing.
+    Yahoo lets you create as many accounts as you like; add each one's app password below.
+  </p>
+
+  {% if pool_error %}
+  <div class="banner error" style="margin-top:14px">{{ pool_error }}</div>
+  {% endif %}
+
+  {% if pool_accounts %}
+  <div class="pool-list">
+    {% for acc in pool_accounts %}
+    <div class="pool-row">
+      <div class="pool-row-main">
+        <div class="pool-row-email">
+          {{ icons.mail(14) }} {{ acc.email_address }}
+          {% if acc.claimed_by_job_id %}<span class="pool-badge in-use">in use</span>{% endif %}
+          {% if not acc.enabled %}<span class="pool-badge disabled">disabled</span>{% endif %}
+        </div>
+        <div class="pool-row-meta">
+          {{ acc.imap_server }}:{{ acc.imap_port }}
+          {% if acc.last_test_ok is not none %}
+            &middot;
+            {% if acc.last_test_ok %}<span style="color:var(--success-text)">{{ icons.check_circle(12) }} {{ acc.last_test_message }}</span>
+            {% else %}<span style="color:var(--error-text)">{{ icons.warning(12) }} {{ acc.last_test_message }}</span>{% endif %}
+          {% endif %}
+        </div>
+      </div>
+      <div class="pool-row-actions">
+        <!-- Dedicated fast lane: 'warm' keeps this account permanently
+             logged in for instant Application Number searches (see
+             warm_pool.py); 'wordmark' reserves it for Word Mark + Class
+             search's cached session (app.py _wm_get_or_login_session) so
+             batch auto-fetch / other searches never steal it; 'cold' is the
+             regular shared pool (fresh login per use). Submits immediately
+             on change — no separate Save button, matching Test/Disable/
+             Remove's one-click pattern on this page. -->
+        <form method="post" action="{{ url_for('settings_pool_role', account_id=acc.id) }}" style="display:inline">
+          <select name="role" onchange="this.form.submit()" title="Dedicated use for this account"
+                  style="padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text)">
+            <option value="cold" {% if not acc.reserved_for %}selected{% endif %}>Shared (cold)</option>
+            <option value="warm" {% if acc.reserved_for == 'warm_pool' %}selected{% endif %}>App-Number Search (warm)</option>
+            <option value="wordmark" {% if acc.reserved_for == 'wordmark_pool' %}selected{% endif %}>Word Mark + Class Search</option>
+          </select>
+        </form>
+        <button type="button" class="secondary" onclick="testPoolAccount({{ acc.id }}, this)">Test</button>
+        <form method="post" action="{{ url_for('settings_pool_toggle', account_id=acc.id) }}" style="display:inline">
+          <button type="submit" class="secondary">{{ "Disable" if acc.enabled else "Enable" }}</button>
+        </form>
+        <form method="post" action="{{ url_for('settings_pool_remove', account_id=acc.id) }}" style="display:inline"
+              onsubmit="return confirm('Remove {{ acc.email_address }} from the pool?');">
+          <button type="submit" class="secondary" style="border-color:var(--error-text);color:var(--error-text)">Remove</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty" style="margin-top:14px">No pool accounts yet — click "Add Account" to add your first one.</div>
+  {% endif %}
+
+  <!-- Hidden-by-default add-account form, revealed by the + button -->
+  <form method="post" action="{{ url_for('settings_pool_add') }}" id="pool-add-form" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+    <div class="field-row">
+      <div class="field-group">
+        <label for="pool_email">Email Address</label>
+        <input type="email" id="pool_email" name="pool_email" placeholder="you2@gmail.com" required autocomplete="off">
+      </div>
+      <div class="field-group">
+        <label for="pool_app_password">App Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="pool_app_password" name="pool_app_password" placeholder="xxxx xxxx xxxx xxxx" required autocomplete="off">
+          <button type="button" class="pw-toggle" onclick="togglePoolPassword()" title="Show / hide password">{{ icons.eye(16) }}</button>
+        </div>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <label for="pool_imap_server">IMAP Server</label>
+        <input type="text" id="pool_imap_server" name="pool_imap_server" value="imap.gmail.com">
+      </div>
+      <div class="field-group">
+        <label for="pool_imap_port">IMAP Port</label>
+        <input type="number" id="pool_imap_port" name="pool_imap_port" value="993" min="1" max="65535">
+      </div>
+    </div>
+    <small class="hint">Gmail setup: Enable 2-Step Verification → myaccount.google.com/apppasswords → create an App Password for "Mail" → paste it above.</small>
+    <div class="form-actions">
+      <button type="submit">{{ icons.plus(14) }} Add to Pool</button>
+      <button type="button" class="secondary" onclick="togglePoolAddForm()">Cancel</button>
+    </div>
+  </form>
+</div>
+
+<!-- ── Grok API (CAPTCHA auto-solve fallback) ── -->
+<div class="card">
+  <h2>Grok API (CAPTCHA fallback solver)</h2>
+  <p style="color:var(--muted);font-size:0.88rem;margin-top:0">
+    The IP India search CAPTCHA is solved automatically using a built-in math
+    parser. Add a Grok API key here as a fallback — it's only called if the
+    portal changes the CAPTCHA wording and the built-in parser can't understand it.
+  </p>
+
+  <form method="post" action="{{ url_for('settings_save') }}">
+    <!-- Preserve the other settings fields when this form is submitted on its own -->
+    <input type="hidden" name="email_address" value="{{ email_address }}">
+    <input type="hidden" name="imap_server" value="{{ imap_server }}">
+    <input type="hidden" name="imap_port" value="{{ imap_port }}">
+    <input type="hidden" name="otp_timeout" value="{{ otp_timeout }}">
+    <input type="hidden" name="sender_filter" value="{{ sender_filter }}">
+    <input type="hidden" name="subject_filter" value="{{ subject_filter }}">
+
+    <div class="field-group">
+      <label for="grok_api_key">Grok API Key</label>
+      <input type="text" id="grok_api_key" name="grok_api_key"
+             value="{{ masked_grok_key }}" placeholder="xai-..."
+             autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+      <small class="hint">
+        Paste the FULL key including the "xai-" prefix. Get one from <a href="https://console.x.ai" target="_blank" rel="noopener noreferrer">console.x.ai</a>. Optional — leave blank to rely on the built-in solver only.
+      </small>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit">Save Grok Key</button>
+    </div>
+  </form>
+</div>
+
+<style>
+  .info-card { background: linear-gradient(135deg, #1e3a5f 0%, #162d4a 100%); border-color: #2a4a6d; }
+  .info-card h2 { color: #7db8f7; margin-bottom: 16px; }
+  .steps { display: flex; flex-direction: column; gap: 14px; }
+  .step { display: flex; gap: 14px; align-items: flex-start; }
+  .step-num {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.85rem;
+  }
+  .step strong { color: var(--text); }
+  .step p { color: var(--muted); margin: 4px 0 0; font-size: 0.87rem; }
+
+  .provider-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .tab-btn {
+    padding: 6px 14px; border-radius: 20px; font-size: 0.85rem;
+    border: 1px solid var(--border); background: transparent; color: var(--muted);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .tab-btn:hover { background: var(--row-hover); color: var(--text); }
+  .tab-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+  .provider-hint {
+    background: var(--row-hover); border-radius: 8px;
+    padding: 10px 14px; font-size: 0.85rem;
+    margin-bottom: 20px; color: var(--text);
+    border-left: 3px solid var(--accent);
+  }
+  .provider-hint a { color: var(--accent); }
+
+  .field-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+  .field-group label { font-size: 0.85rem; font-weight: 600; color: var(--muted); }
+  .field-group input[type="text"],
+  .field-group input[type="email"],
+  .field-group input[type="password"],
+  .field-group input[type="number"] {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 0.95rem;
+    background: var(--bg); color: var(--text);
+    transition: border-color 0.15s;
+  }
+  .field-group input:focus { outline: none; border-color: var(--accent); }
+  .hint { color: var(--muted); font-size: 0.8rem; }
+
+  .pw-wrap { position: relative; }
+  .pw-wrap input { padding-right: 42px; }
+  .pw-toggle {
+    position: absolute; right: 0; top: 0; bottom: 0;
+    width: 40px; background: transparent; border: none;
+    cursor: pointer; font-size: 1rem; color: var(--muted);
+    border-radius: 0 8px 8px 0;
+  }
+  .pw-toggle:hover { color: var(--text); }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 500px) { .field-row { grid-template-columns: 1fr; } }
+
+  .advanced-section { margin-bottom: 20px; }
+  .advanced-section summary {
+    cursor: pointer; font-size: 0.9rem; color: var(--muted);
+    font-weight: 600; padding: 8px 0; user-select: none;
+  }
+  .advanced-section summary:hover { color: var(--text); }
+  .optional-tag {
+    background: var(--border); border-radius: 4px;
+    padding: 2px 6px; font-size: 0.75rem; font-weight: 400;
+    margin-left: 6px; color: var(--muted);
+  }
+  .advanced-body { padding: 14px 0 0; }
+
+  .form-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+  .form-actions button { min-width: 130px; }
+
+  .test-result {
+    margin-top: 14px; padding: 12px 16px;
+    border-radius: 8px; font-size: 0.9rem;
+  }
+  .test-result.success { background: var(--success-bg); color: var(--success-text); }
+  .test-result.error { background: var(--error-bg); color: var(--error-text); }
+  .test-result.loading { background: var(--row-hover); color: var(--muted); }
+
+  .pool-add-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border-radius: 8px;
+    border: 1px solid var(--accent); background: transparent; color: var(--accent);
+    cursor: pointer; font-size: 0.88rem; font-weight: 600;
+  }
+  .pool-add-btn:hover { background: var(--accent); color: white; }
+
+  .pool-list { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+  .pool-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+    padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--row-hover);
+  }
+  .pool-row-main { min-width: 0; }
+  .pool-row-email { font-weight: 600; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .pool-row-meta { color: var(--muted); font-size: 0.8rem; margin-top: 3px; }
+  .pool-row-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pool-row-actions button {
+    padding: 6px 12px; font-size: 0.82rem; min-width: 0;
+  }
+  .pool-badge {
+    font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 10px;
+  }
+  .pool-badge.in-use { background: var(--accent); color: white; }
+  .pool-badge.disabled { background: var(--border); color: var(--muted); }
+</style>
+
+<script>
+const PROVIDER_CONFIGS = {
+  gmail:   { server: "imap.gmail.com",           port: 993, hint: '<strong>Gmail setup:</strong> Enable 2-Step Verification → go to <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer">myaccount.google.com/apppasswords</a> → create an App Password for "Mail" → paste it above.' },
+  outlook: { server: "outlook.office365.com",    port: 993, hint: '<strong>Outlook/Hotmail setup:</strong> Go to your Microsoft Account Security → Advanced Security Options → App passwords → create one.' },
+  yahoo:   { server: "imap.mail.yahoo.com",      port: 993, hint: '<strong>Yahoo setup:</strong> Go to Yahoo Account Security → Generate app password → select "Other app" → paste it above.' },
+  custom:  { server: "",                          port: 993, hint: '<strong>Custom IMAP:</strong> Enter your provider\'s IMAP server and port below.' },
+};
+
+function setProvider(key, btn) {
+  const cfg = PROVIDER_CONFIGS[key];
+  const serverInput = document.getElementById("imap_server");
+  const portInput   = document.getElementById("imap_port");
+  const hint        = document.getElementById("provider-hint");
+
+  if (cfg.server) serverInput.value = cfg.server;
+  portInput.value = cfg.port;
+  // Use textContent-safe method for hint since it contains controlled HTML
+  hint.innerHTML = cfg.hint; // safe: all values are hardcoded, not user input
+
+  document.querySelectorAll(".tab-btn").forEach(function(b) {
+    b.classList.remove("active");
+  });
+  btn.classList.add("active");
+}
+
+var ICON_EYE = '{{ icons.eye(16) }}';
+var ICON_EYE_OFF = '{{ icons.eye_off(16) }}';
+
+function togglePassword() {
+  const inp = document.getElementById("app_password");
+  const btn = document.getElementById("pw-toggle-btn");
+  if (inp.type === "password") {
+    inp.type = "text";
+    btn.innerHTML = ICON_EYE_OFF;
+  } else {
+    inp.type = "password";
+    btn.innerHTML = ICON_EYE;
+  }
+}
+
+function runConnectionTest() {
+  const email    = document.getElementById("email_address").value.trim();
+  const password = document.getElementById("app_password").value.trim();
+  const server   = document.getElementById("imap_server").value.trim();
+  const port     = parseInt(document.getElementById("imap_port").value.trim(), 10) || 993;
+
+  if (!email || !password) {
+    showTestResult(false, "Please enter your email address and app password first.");
+    return;
+  }
+
+  const btn = document.getElementById("test-btn");
+  btn.disabled = true;
+  btn.textContent = "Testing…";
+  showTestResult(null, "Connecting to IMAP server…");
+
+  fetch("{{ url_for('api_test_email') }}", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: email, password: password, server: server, port: port }),
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    showTestResult(data.ok, data.message);
+  })
+  .catch(function(err) {
+    showTestResult(false, "Network error — could not reach the server.");
+  })
+  .finally(function() {
+    btn.disabled = false;
+    btn.textContent = "Test Connection";
+  });
+}
+
+function showTestResult(ok, msg) {
+  const div = document.getElementById("test-result");
+  div.style.display = "block";
+  div.className = "test-result " + (ok === null ? "loading" : ok ? "success" : "error");
+  // Use textContent to prevent XSS — message comes from our own server, but still best practice
+  div.textContent = msg;
+}
+
+function togglePoolAddForm() {
+  const form = document.getElementById("pool-add-form");
+  form.style.display = form.style.display === "none" ? "block" : "none";
+  if (form.style.display === "block") {
+    document.getElementById("pool_email").focus();
+  }
+}
+
+function togglePoolPassword() {
+  const inp = document.getElementById("pool_app_password");
+  inp.type = inp.type === "password" ? "text" : "password";
+}
+
+function testPoolAccount(accountId, btn) {
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Testing…";
+
+  fetch("/api/test-pool-account/" + accountId, { method: "POST" })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      btn.title = data.message;
+      alert((data.ok ? "✓ " : "✗ ") + data.message);
+      // Reload so the persisted test result shows in the row.
+      window.location.reload();
+    })
+    .catch(function() {
+      alert("Network error — could not reach the server.");
+    })
+    .finally(function() {
+      btn.disabled = false;
+      btn.textContent = original;
+    });
+}
+</script>
+
+{% endblock %}

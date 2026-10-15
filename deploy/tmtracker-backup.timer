@@ -1,0 +1,13 @@
+[Unit]
+Description=TM Tracker - Daily Postgres backup schedule
+
+[Timer]
+# Runs during the app's own quietest hours (well after IST business hours
+# and before any early-morning IP India activity) — see scheduler.py's
+# journal-download / staleness-refresh timing for the same rationale.
+OnCalendar=*-*-* 03:30:00
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

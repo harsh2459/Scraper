@@ -1,0 +1,52 @@
+# What to UPLOAD to the VPS (rsync exclude list).
+#
+# From your Windows machine, in Git Bash / WSL:
+#
+#   rsync -avz --exclude-from=deploy/upload.txt ./ tmtracker@YOUR_VPS_IP:/opt/tmtracker/
+#
+# Or just zip the repo and skip these paths manually.
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Node / frontend build
+node_modules/
+tm_manager/frontend/dist/
+tm_manager/frontend/dist-ssr/
+
+# Local runtime data (regenerated on the server)
+data/
+tm_manager/Journal/
+tm_manager/_journal_logo_cache/
+tm_manager/_logo_cache/
+tm_manager/Demo/
+tm_manager/frontend/demo/
+scratch/
+video-software/
+
+# Logs
+*.log
+_run_*.log
+_run_*.err
+
+# Old local SQLite (Postgres is the live DB)
+*.db
+
+# SECRETS — create fresh on the server from deploy/*.example
+.env
+tm_manager/.env
+tm_manager/frontend/.env
+tm_manager/frontend/.env.local
+
+# IDE / OS
+.vscode/
+.idea/
+.claude/
+*.swp
+.DS_Store
+
+# Windows-only helper (server uses systemd instead)
+run-all.ps1

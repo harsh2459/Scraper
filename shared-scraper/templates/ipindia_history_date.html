@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}{{ date_str }} — Search History{% endblock %}
+{% block content %}
+
+<a class="back-link" href="{{ url_for('ipindia_history_dates') }}">{{ icons.back(14) }} Back to dates</a>
+
+<h1>{{ icons.calendar(20) }} {{ date_str }}</h1>
+<p class="subtitle">{{ groups|length }} group(s) &middot; application numbers close together are bundled into ranges.</p>
+
+{% if groups %}
+  <div class="search-grid">
+    {% for g in groups %}
+      {% if g.kind == 'range' %}
+      <a class="search-card" href="{{ url_for('ipindia_history_range', date_str=date_str, start=g.start, end=g.end) }}">
+        <div class="name" style="display:flex;align-items:center;gap:8px">{{ icons.hash(15) }} {{ g.label }}</div>
+        <div class="meta">{{ g.count }} result(s)</div>
+      </a>
+      {% else %}
+      <a class="search-card" href="{{ url_for('ipindia_result', search_id=g.id, back=request.path) }}">
+        <div class="name" style="display:flex;align-items:center;gap:8px">{{ icons.tag(15) }} {{ g.query }}</div>
+        <div class="meta">Brand / Word Mark &middot; {{ g.result_count or 0 }} result(s)</div>
+        {% if g.error %}<div class="meta" style="color:var(--error-text);display:flex;align-items:center;gap:6px">{{ icons.warning(13) }} {{ g.error[:60] }}</div>{% endif %}
+      </a>
+      {% endif %}
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty">No searches found for this date.</div>
+{% endif %}
+
+{% endblock %}

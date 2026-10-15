@@ -1,0 +1,3 @@
+# Fixture agent / local worker API. Live mode also needs the existing root
+# scraper dependencies in ../requirements.txt for portal/PDF extraction.
+-r ../control_plane/requirements.txt

@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}Working — Datascraper{% endblock %}
+{% block content %}
+
+<h1>{{ icons.document(20) }} Working</h1>
+<p class="subtitle">Applications your team is actively handling — notes and status here are internal, separate from IP India's own portal status.</p>
+
+{% if items %}
+<div class="working-list">
+  {% for item in items %}
+  <div class="working-card">
+    <div class="working-card-head">
+      <div class="working-card-identity">
+        {% if item.logo_filename %}
+        <img src="{{ url_for('ipindia_logo', query=item.app_no, filename=item.logo_filename) }}" alt="" class="working-card-logo">
+        {% else %}
+        <div class="working-card-logo working-card-logo-empty">{{ (item.word_mark or item.app_no)[:1]|upper }}</div>
+        {% endif %}
+        <div>
+          <div class="name">{{ item.word_mark or item.app_no }}</div>
+          <div class="meta">
+            {{ icons.hash(13) }} App No. {{ item.app_no }}
+            {% if item.portal_status %} &middot; {{ item.portal_status }}{% endif %}
+            {% if item.proprietor_name %} &middot; {{ item.proprietor_name }}{% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="working-card-actions">
+        {% if item.search_id %}
+        <a class="btn-secondary" href="{{ url_for('ipindia_result', search_id=item.search_id, back=request.full_path) }}">{{ icons.tag(13) }} View Details</a>
+        {% endif %}
+        <form method="post" action="{{ url_for('working_close', work_item_id=item.id) }}" onsubmit="return confirm('Mark this as closed? It will drop off this list, but its note history is kept.')">
+          <button type="submit" class="btn-secondary btn-danger">{{ icons.stop(13) }} Close</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="working-card-body">
+      <form method="post" action="{{ url_for('working_set_status', work_item_id=item.id) }}" class="status-form">
+        <label class="field-label" for="status-{{ item.id }}">Status</label>
+        <select id="status-{{ item.id }}" name="status" onchange="this.form.submit()" class="status-select status-{{ item.work_status|lower|replace(' ', '-') }}">
+          {% for s in work_statuses %}
+          <option value="{{ s }}" {{ 'selected' if s == item.work_status }}>{{ s }}</option>
+          {% endfor %}
+        </select>
+        <span class="working-updated">Updated {{ item.updated_at.strftime('%Y-%m-%d %H:%M') }}</span>
+      </form>
+
+      <form method="post" action="{{ url_for('working_add_note', work_item_id=item.id) }}" class="note-form">
+        <input type="text" name="note" placeholder="Add a note — e.g. called client, sent draft reply…" required>
+        <button type="submit" class="btn-primary">{{ icons.document(13) }} Add</button>
+      </form>
+
+      {% if item.notes %}
+      <div class="note-log">
+        {% for n in item.notes %}
+        <div class="note-entry">
+          <div class="note-entry-main">
+            <div class="note-date">{{ n.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+            <div class="note-text">{{ n.note }}</div>
+          </div>
+          <form method="post" action="{{ url_for('working_delete_note', note_id=n.id) }}" onsubmit="return confirm('Delete this note?')">
+            <button type="submit" class="note-delete-btn" title="Delete note">{{ icons.stop(12) }}</button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="note-log-empty">No notes yet.</div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty">Nothing being actively worked right now. Use "Start Working" on a card in <a class="plain-link" href="{{ url_for('ipindia_history_dates') }}">Search History</a> to add one here.</div>
+{% endif %}
+
+<style>
+  .working-list { display: flex; flex-direction: column; gap: 16px; }
+  .working-card {
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--bg); overflow: hidden;
+  }
+  .working-card-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 16px 18px; border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .working-card-identity { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .working-card-logo {
+    width: 44px; height: 44px; border-radius: 8px; object-fit: contain;
+    background: #fff; border: 1px solid var(--border); flex-shrink: 0;
+  }
+  .working-card-logo-empty {
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted); font-weight: 700; font-size: 1rem; background: var(--row-hover);
+  }
+  .working-card .name { font-weight: 600; font-size: 1.02rem; margin-bottom: 3px; }
+  .working-card .meta { color: var(--muted); font-size: 0.82rem; }
+  .working-card-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+  .working-card-body { padding: 16px 18px; }
+
+  .status-form { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .status-form .field-label { font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+  .status-select {
+    padding: 7px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+    font-size: 0.85rem; background: var(--bg); color: var(--text); font-weight: 600;
+    cursor: pointer;
+  }
+  .status-select:focus { outline: none; }
+  .status-select.status-talking { color: #9a5b00; border-color: #9a5b00; background: #fff4e5; }
+  .status-select.status-follow-up { color: #1a56b0; border-color: #1a56b0; background: #e8f0fe; }
+  .status-select.status-documents-pending { color: #7a4fd6; border-color: #7a4fd6; background: #f1eafe; }
+  .status-select.status-filed { color: #14804a; border-color: #14804a; background: #e8f8f0; }
+  .status-select.status-closed { color: var(--muted); }
+  .working-updated { color: var(--muted); font-size: 0.76rem; margin-left: auto; }
+
+  .note-form { display: flex; gap: 8px; margin-bottom: 12px; }
+  .note-form input {
+    flex: 1; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 0.88rem; background: var(--bg); color: var(--text);
+  }
+  .note-form input:focus { outline: none; border-color: var(--accent); }
+
+  .note-log { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
+  .note-entry {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+    padding: 9px 12px; border-radius: 8px; background: var(--row-hover); font-size: 0.85rem;
+  }
+  .note-entry-main { min-width: 0; }
+  .note-date { color: var(--muted); font-size: 0.72rem; margin-bottom: 3px; font-weight: 600; }
+  .note-text { word-break: break-word; }
+  .note-log-empty { color: var(--muted); font-size: 0.82rem; font-style: italic; }
+  .note-delete-btn {
+    flex-shrink: 0; width: 22px; height: 22px; border: none; border-radius: 6px;
+    background: transparent; color: var(--muted); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .note-delete-btn:hover { background: var(--error-bg); color: var(--error-text); }
+
+  .btn-secondary {
+    padding: 8px 14px; border: 1px solid var(--border);
+    border-radius: 8px; background: transparent;
+    color: var(--text); cursor: pointer; font-size: 0.85rem;
+    text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+    white-space: nowrap;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-secondary.btn-danger:hover { border-color: var(--error-text); color: var(--error-text); }
+
+  .btn-primary {
+    padding: 9px 16px; border: none; border-radius: 8px;
+    background: var(--accent); color: #fff; cursor: pointer; font-size: 0.85rem; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+</style>
+
+{% endblock %}

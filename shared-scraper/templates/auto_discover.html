@@ -1,0 +1,412 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}Auto Discover — IP India{% endblock %}
+{% block content %}
+
+<h1>{{ icons.dice(20) }} Auto Discover</h1>
+<p class="subtitle">
+  Automatically finds live trademark application numbers on the IP India portal:
+  tries random application numbers within a range you choose. OTP is entered
+  manually below — no email inbox access needed. You can run multiple jobs at
+  once, each with its own email. Every hit automatically kicks off a
+  <a href="/cluster" class="plain-link">Cluster Expand</a> run in the background
+  for that hit's trade mark name (requires email OTP credentials configured in
+  Settings, since there's no one to type a code for these background runs) —
+  check the Cluster Expand page to watch those grow.
+</p>
+
+{% if error %}
+<div class="banner error" style="margin-bottom:16px">{{ error }}</div>
+{% endif %}
+
+{% if pending_id %}
+<!-- ═══════════════════════════════════════════════════════════
+     OTP entry — CAPTCHA solved, OTP sent, waiting on user input
+     ═══════════════════════════════════════════════════════════ -->
+<div class="card">
+  <h2>Enter the OTP</h2>
+  <p style="color:var(--muted);font-size:0.88rem;margin-top:0">
+    OTP was sent to <strong>{{ email }}</strong>. Check your inbox and enter it below to start the run.
+  </p>
+
+  <form method="post" action="{{ url_for('discover_verify_otp') }}" style="margin-top:20px">
+    <input type="hidden" name="pending_id" value="{{ pending_id }}">
+
+    <div style="margin-bottom:16px">
+      <label class="field-label" for="dc-otp">Enter the 6-digit OTP <span class="req">*</span></label>
+      <input type="number" id="dc-otp" name="otp_code"
+             min="100000" max="999999" required autofocus
+             placeholder="123456"
+             style="max-width:180px;font-size:1.4rem;font-weight:700;letter-spacing:3px;text-align:center">
+    </div>
+
+    <button type="submit">{{ icons.play(14) }} Verify &amp; Start</button>
+  </form>
+</div>
+{% endif %}
+
+<!-- ═══════════════════════════════════════════════════════════
+     Series Tracker — exhaustive sequential coverage mode
+     ═══════════════════════════════════════════════════════════ -->
+<div class="card">
+  <h2>{{ icons.hash(18) }} Series Tracker</h2>
+  <p style="color:var(--muted);font-size:0.88rem;margin-top:0">
+    Application numbers are grouped into 90 "series" of 100,000 each, by their
+    first two digits (e.g. series 78 = 7800000-7899999). Type the series you
+    want covered below, in the order you want them worked — the tracker scans
+    each one <strong>sequentially</strong> (not randomly) for guaranteed full
+    coverage, checkpoints progress so a stop/restart resumes exactly where it
+    left off, and auto-advances to the next queued series when one finishes.
+  </p>
+
+  <form method="post" action="{{ url_for('discover_queue_save') }}" style="margin-bottom:20px">
+    <div class="field-g">
+      <label class="field-label" for="sq-list">Series Queue (comma-separated, e.g. "78, 77, 65")</label>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <input type="text" id="sq-list" name="series_list" value="{{ series_queue_text }}"
+               placeholder="78, 77, 65" style="flex:1;min-width:200px">
+        <button type="submit" class="btn-secondary">{{ icons.check_circle(14) }} Save Queue</button>
+      </div>
+    </div>
+  </form>
+
+  {% if series_progress %}
+  <div class="table-responsive" style="overflow-x:auto;margin-bottom:20px">
+    <table style="width:100%;border-collapse:collapse;font-size:0.86rem">
+      <thead>
+        <tr style="text-align:left;border-bottom:1px solid var(--border)">
+          <th style="padding:8px 10px">Series</th>
+          <th style="padding:8px 10px">Status</th>
+          <th style="padding:8px 10px">Have</th>
+          <th style="padding:8px 10px">Missing</th>
+          <th style="padding:8px 10px">Misses</th>
+          <th style="padding:8px 10px">Errors</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in series_progress %}
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:8px 10px;font-weight:600">
+            <a href="{{ url_for('discover_series_detail', series=s.series) }}" class="plain-link">{{ s.series }}</a>
+          </td>
+          <td style="padding:8px 10px">
+            {% if s.status == 'done' %}{{ icons.check_circle(13) }} Done
+            {% elif s.status == 'in_progress' %}{{ icons.bolt(13) }} In progress{% if s.claimed_by_job_id %} (running){% endif %}
+            {% else %}Queued{% endif %}
+          </td>
+          <td style="padding:8px 10px;font-weight:600">{{ s.real_hits_count }}</td>
+          <td style="padding:8px 10px;color:var(--muted)">
+            {% if s.last_checked_number %}{{ "{:,}".format(s.range_end - s.last_checked_number) }}{% else %}100,000{% endif %}
+          </td>
+          <td style="padding:8px 10px;color:var(--muted)">{{ s.misses_count }}</td>
+          <td style="padding:8px 10px;color:var(--muted)">{{ s.errors_count }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <form method="post" action="{{ url_for('discover_start') }}" class="auth-mode-form" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+    <input type="hidden" name="mode" value="series">
+    <input type="hidden" name="delay_min" value="2">
+    <input type="hidden" name="delay_max" value="5">
+    <input type="hidden" name="auth_mode" class="auth-mode-input" value="{{ 'pool' if pool_free_count else 'manual' }}">
+
+    <div class="field-g">
+      <label class="field-label">Login</label>
+      <div class="auth-mode-toggle">
+        <button type="button" class="auth-tab {{ 'active' if pool_free_count }}" onclick="setAuthMode(this, 'pool')">
+          {{ icons.bolt(12) }} Auto (pool) — {{ pool_free_count }} free
+        </button>
+        <button type="button" class="auth-tab {{ 'active' if not pool_free_count }}" onclick="setAuthMode(this, 'manual')">Manual entry</button>
+      </div>
+    </div>
+    <div class="field-g auth-manual-email" style="display:{{ 'none' if pool_free_count else 'flex' }}">
+      <label class="field-label" for="sq-email">Your Email Address <span class="req">*</span></label>
+      <input type="email" id="sq-email" name="email" {{ 'required' if not pool_free_count }}
+             value="{{ series_last_email }}" placeholder="you@gmail.com" autocomplete="username">
+    </div>
+    <div class="field-g">
+      <label class="field-label" for="sq-series">Series (optional)</label>
+      <input type="number" id="sq-series" name="target_series" min="10" max="99" placeholder="e.g. 78" style="width:90px">
+      <small class="hint">Leave blank to auto-pick the next queued series. Set to scan only that series (e.g. 78 → 7800000-7899999).</small>
+    </div>
+    <button type="submit">{{ icons.bolt(14) }} Auto Suggest / Start Next</button>
+  </form>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     Running jobs — one card per active job, each polling independently.
+     Rendered entirely by JS (see script block below) from the template
+     above, seeded with active_job_ids at load and kept in sync afterward
+     by polling /discover/active — so jobs the auto-launcher starts while
+     this page is already open also get a card, not just ones present at
+     the moment of the page load.
+     ═══════════════════════════════════════════════════════════ -->
+<div class="count" id="discover-jobs-count" style="display:none"></div>
+
+<template id="discover-job-card-template">
+  <div class="card discover-job">
+    <h2>Run in progress</h2>
+    <div class="banner progress job-banner">
+      <div style="display:flex;align-items:center;gap:10px;font-weight:600">
+        <div class="spinner"></div>
+        <span class="job-phase">Working…</span>
+      </div>
+    </div>
+
+    <div class="job-series-line" style="display:none;color:var(--muted);font-size:0.85rem;margin-top:8px"></div>
+
+    <div style="display:flex;gap:28px;flex-wrap:wrap;margin:16px 0">
+      <div class="stat-hits-block">
+        <div class="field-label">Hits</div>
+        <div class="stat-hits" style="font-size:1.4rem;font-weight:700">0 / 0</div>
+      </div>
+      <div>
+        <div class="field-label">Attempts</div>
+        <div class="stat-attempts" style="font-size:1.4rem;font-weight:700">0</div>
+      </div>
+      <div>
+        <div class="field-label">Misses</div>
+        <div class="stat-misses" style="font-size:1.4rem;font-weight:700">0</div>
+      </div>
+      <div>
+        <div class="field-label">Errors</div>
+        <div class="stat-errors" style="font-size:1.4rem;font-weight:700">0</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <form method="post" class="job-stop-form">
+        <button type="submit" class="btn-secondary" style="border-color:var(--error-text);color:var(--error-text)">{{ icons.stop(14) }} Stop</button>
+      </form>
+      <a href="#" class="btn-secondary job-download-link">{{ icons.download(14) }} Download CSV</a>
+    </div>
+
+    <h3 style="margin-top:20px;font-size:1rem">Hits found so far</h3>
+    <div class="hits-empty empty" style="display:none">No hits yet — still searching…</div>
+    <div class="hits-list search-grid"></div>
+  </div>
+</template>
+
+<div id="discover-jobs-container"></div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     Start form — always available, even while other jobs run
+     ═══════════════════════════════════════════════════════════ -->
+<div class="card">
+  <h2>Start a new Auto Discover run</h2>
+
+  <form method="post" action="{{ url_for('discover_start') }}" class="auth-mode-form">
+    <input type="hidden" name="auth_mode" class="auth-mode-input" value="{{ 'pool' if pool_free_count else 'manual' }}">
+
+    <div class="ip-row" style="margin-bottom:14px">
+      <div class="field-g">
+        <label class="field-label">Login</label>
+        <div class="auth-mode-toggle">
+          <button type="button" class="auth-tab {{ 'active' if pool_free_count }}" onclick="setAuthMode(this, 'pool')">
+            {{ icons.bolt(12) }} Auto (pool) — {{ pool_free_count }} free
+          </button>
+          <button type="button" class="auth-tab {{ 'active' if not pool_free_count }}" onclick="setAuthMode(this, 'manual')">Manual entry</button>
+        </div>
+      </div>
+      <div class="field-g">
+        <label class="field-label" for="dc-target">Hits to collect before stopping <span class="req">*</span></label>
+        <input type="number" id="dc-target" name="target_hits" min="1" max="500" value="10" required>
+      </div>
+    </div>
+
+    <div class="ip-row auth-manual-email" style="margin-bottom:14px;display:{{ 'none' if pool_free_count else 'grid' }}">
+      <div class="field-g">
+        <label class="field-label" for="dc-email">Your Email Address <span class="req">*</span></label>
+        <input type="email" id="dc-email" name="email" {{ 'required' if not pool_free_count }}
+               placeholder="you@gmail.com" autocomplete="username">
+        <small class="hint">IP India sends OTP to this address for login. Use a different email for each concurrent run.</small>
+      </div>
+    </div>
+
+    <div class="ip-row" style="margin-bottom:14px">
+      <div class="field-g">
+        <label class="field-label" for="dc-delay-min">Min delay between searches (seconds)</label>
+        <input type="number" id="dc-delay-min" name="delay_min" min="0.5" max="60" step="0.5" value="2">
+      </div>
+      <div class="field-g">
+        <label class="field-label" for="dc-delay-max">Max delay between searches (seconds)</label>
+        <input type="number" id="dc-delay-max" name="delay_max" min="0.5" max="60" step="0.5" value="5">
+      </div>
+    </div>
+
+    <div class="ip-row" style="margin-bottom:20px">
+      <div class="field-g">
+        <label class="field-label" for="dc-start">Start number</label>
+        <input type="number" id="dc-start" name="start_number" min="1" max="9999999" placeholder="e.g. 7465515">
+        <small class="hint">Search will never go below this number. Leave blank to search the full range.</small>
+      </div>
+      <div class="field-g">
+        <label class="field-label" for="dc-end">End number (optional)</label>
+        <input type="number" id="dc-end" name="end_number" min="1" max="9999999" placeholder="e.g. 9525454">
+        <small class="hint">If set, searches randomly between start and end. Leave blank for no upper limit.</small>
+      </div>
+    </div>
+
+    <button type="submit">{{ icons.play(14) }} Start Auto Discover</button>
+  </form>
+</div>
+
+{% if finished_job_ids %}
+<div class="card">
+  <h2>Recent runs</h2>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    {% for job_id in finished_job_ids %}
+    <a href="{{ url_for('discover_download', job_id=job_id) }}" class="btn-secondary">{{ icons.download(14) }} Download CSV ({{ job_id[:8] }})</a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<style>
+  .ip-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 560px) { .ip-row { grid-template-columns: 1fr; } }
+  .field-g { display: flex; flex-direction: column; gap: 5px; }
+  .field-label { font-size: 0.85rem; font-weight: 600; color: var(--muted); }
+  .field-g input {
+    padding: 10px 12px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 0.95rem;
+    background: var(--bg); color: var(--text);
+  }
+  .field-g input:focus { outline: none; border-color: var(--accent); }
+  .req { color: var(--error-text); }
+  .hint { color: var(--muted); font-size: 0.78rem; }
+  .btn-secondary {
+    padding: 10px 16px; border: 1px solid var(--border);
+    border-radius: 8px; background: transparent;
+    color: var(--text); cursor: pointer; font-size: 0.9rem;
+    text-decoration: none; display: inline-block;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .spinner {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2.5px solid var(--border); border-top-color: var(--accent);
+    animation: spin 0.8s linear infinite; flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<script>
+(function(){
+  var container  = document.getElementById("discover-jobs-container");
+  var countEl    = document.getElementById("discover-jobs-count");
+  var template   = document.getElementById("discover-job-card-template");
+  var knownIds   = new Set();
+  var activeCount = 0;
+
+  function updateCount(delta){
+    activeCount += delta;
+    if (activeCount > 0) {
+      countEl.style.display = "";
+      countEl.textContent = activeCount + " run(s) in progress";
+    } else {
+      countEl.style.display = "none";
+    }
+  }
+
+  // One job card = one poll loop, regardless of whether the card existed
+  // at page load or was injected later by the discovery poll below — so
+  // jobs the auto-launcher starts while this page is already open behave
+  // identically to ones that were already running when the page loaded.
+  function watchJob(jobId){
+    if (knownIds.has(jobId)) return;
+    knownIds.add(jobId);
+    updateCount(1);
+
+    var card = template.content.firstElementChild.cloneNode(true);
+    card.setAttribute("data-job-id", jobId);
+    card.querySelector(".job-stop-form").action = "/discover/stop/" + jobId;
+    card.querySelector(".job-download-link").href = "/discover/download/" + jobId;
+    container.appendChild(card);
+
+    var phaseEl    = card.querySelector(".job-phase");
+    var banner     = card.querySelector(".job-banner");
+    var hitsList   = card.querySelector(".hits-list");
+    var hitsEmpty  = card.querySelector(".hits-empty");
+    var seriesLine = card.querySelector(".job-series-line");
+    var hitsBlock  = card.querySelector(".stat-hits-block");
+
+    function render(j){
+      if (j.mode === "series") {
+        seriesLine.style.display = "block";
+        seriesLine.textContent = j.current_series
+          ? "Series mode — currently scanning series " + j.current_series
+          : "Series mode — waiting for next queued series…";
+        hitsBlock.style.display = "none";
+        card.querySelector(".stat-hits").textContent = j.hits.length;
+      } else {
+        seriesLine.style.display = "none";
+        hitsBlock.style.display = "";
+        card.querySelector(".stat-hits").textContent = j.hits.length + " / " + j.target_hits;
+      }
+      card.querySelector(".stat-attempts").textContent = j.attempts_count;
+      card.querySelector(".stat-misses").textContent = j.misses_count;
+      card.querySelector(".stat-errors").textContent = j.errors_count;
+
+      hitsList.innerHTML = "";
+      var hits = j.hits.slice().reverse();
+      hitsEmpty.style.display = hits.length ? "none" : "block";
+      hits.forEach(function(h){
+        var a = document.createElement("a");
+        a.className = "search-card";
+        a.href = "/ipindia/result/" + h.search_id;
+        var nameDiv = document.createElement("div");
+        nameDiv.className = "name";
+        nameDiv.textContent = h.app_no;
+        var metaDiv = document.createElement("div");
+        metaDiv.className = "meta";
+        metaDiv.textContent = h.found_at;
+        a.appendChild(nameDiv);
+        a.appendChild(metaDiv);
+        hitsList.appendChild(a);
+      });
+    }
+
+    function poll(){
+      fetch("/discover/status/" + jobId)
+        .then(function(r){ return r.json(); })
+        .then(function(j){
+          if (j.status === "unknown") { return; }
+          phaseEl.textContent = j.phase || "Working…";
+          render(j);
+          if (j.status === "running") {
+            setTimeout(poll, 1500);
+          } else {
+            updateCount(-1);
+            if (j.status === "done" || j.status === "stopped" || j.status === "capped") {
+              banner.className = "banner success job-banner";
+              banner.textContent = j.message || "Finished.";
+            } else {
+              banner.className = "banner error job-banner";
+              banner.textContent = "Error: " + (j.message || "Unknown error.");
+            }
+          }
+        })
+        .catch(function(){ setTimeout(poll, 3000); });
+    }
+    poll();
+  }
+
+  {{ active_job_ids|tojson }}.forEach(watchJob);
+
+  // Discovers jobs started by the background auto-launcher while this page
+  // is already open (it has no click/reload to hang a card off of otherwise).
+  function pollActive(){
+    fetch("/discover/active")
+      .then(function(r){ return r.json(); })
+      .then(function(data){ (data.job_ids || []).forEach(watchJob); })
+      .catch(function(){ /* ignore, retry next tick */ })
+      .finally(function(){ setTimeout(pollActive, 5000); });
+  }
+  setTimeout(pollActive, 5000);
+})();
+</script>
+
+{% endblock %}
